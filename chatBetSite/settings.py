@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'chatBetSite.wsgi.application'
 ASGI_APPLICATION = 'chatBetSite.asgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:58179",
+    "http://localhost:4200",
  ]
 
 # Database

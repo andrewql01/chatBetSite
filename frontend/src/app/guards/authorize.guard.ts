@@ -1,4 +1,4 @@
-import { CanActivateFn } from '@angular/router';
+import {CanActivateFn, Router} from '@angular/router';
 import { LocalStorageService } from '../services/localstorage.service';
 import { LoginService } from '../services/login.service';
 import { Injectable } from '@angular/core';
@@ -12,16 +12,15 @@ import { JWTTokenService } from '../services/jwt-token.service';
 
 export class AuthorizeGuard implements CanActivate {
   constructor(private loginService: LoginService,
-              private localStorageService: LocalStorageService,
-              private jwtService: JWTTokenService) {
+              private jwtService: JWTTokenService,
+              private router: Router) {
   }
   canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
       if (this.jwtService.getUser()) {
           if (this.jwtService.isTokenExpired()) {
-            // Should Redirect Sig-In Page
-            return true;
+            return this.router.navigate(['/login']);
           } else {
             return true;
           }
@@ -30,7 +29,7 @@ export class AuthorizeGuard implements CanActivate {
           this.loginService.signInCallBack().then((e) => {
              resolve(true);
           }).catch((e) => {
-            // Should Redirect Sign-In Page
+            return this.router.navigate(['/login']);
           });
         });
       }

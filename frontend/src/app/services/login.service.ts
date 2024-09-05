@@ -18,13 +18,13 @@ export class LoginService {
     const payload = { username, password };
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-    return this.http.post(this.apiUrl, payload, { headers: headers })
+    return this.http.post(this.apiUrl, payload, { headers })
       .pipe(
         tap((response: any) => {
           // Assuming the response contains the tokens
-          const { accessToken, refreshToken } = response;
-          this.authService.setToken(accessToken);  // Store the access token
-          localStorage.setItem('refreshToken', refreshToken);  // Store the refresh token
+          const { access, refresh } = response; // Adjust according to your API response
+          this.authService.setToken(access);  // Store the access token
+          localStorage.setItem('refreshToken', refresh);  // Store the refresh token
         })
       );
   }
@@ -36,7 +36,7 @@ export class LoginService {
 
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-    return this.http.post(this.apiUrl + 'refresh/', { refreshToken }, { headers });
+    return this.http.post(this.apiUrl + 'refresh/', { refresh: refreshToken }, { headers }); // Ensure refresh is in payload
   }
 
   // Example signInCallBack implementation
@@ -44,8 +44,8 @@ export class LoginService {
     return new Promise((resolve, reject) => {
       this.refreshToken().subscribe({
         next: (response: any) => {
-          const {accessToken} = response;
-          this.authService.setToken(accessToken);  // Update the access token
+          const { access } = response; // Ensure access token key matches your backend response
+          this.authService.setToken(access);  // Update the access token
           resolve(true);
         },
         error: (error) => {
@@ -53,6 +53,5 @@ export class LoginService {
         }
       });
     });
-
   }
 }

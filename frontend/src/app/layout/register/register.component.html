@@ -1,0 +1,47 @@
+<div class="container-fluid flex justify-content-center align-items-center flex-wrap h-screen">
+  <div class="w-30rem">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+      <p-panel class="flex flex-column gap-2">
+        <div class="flex justify-content-center align-items-center">
+        <p-header>Create an Account</p-header>
+        </div>
+        <p-inputGroup class="mt-5">
+            <p-floatLabel class="w-full">
+            <input pInputText id="email" formControlName="email" class="border-noround-right"/>
+            <label for="email">Email</label>
+            </p-floatLabel>
+            <button type="button" pButton icon="pi pi-at" class="p-button mb-5"></button>
+        </p-inputGroup>
+        <p-inputGroup>
+          <p-floatLabel class="w-full">
+            <input pInputText id="username" formControlName="username" class="border-noround-right"/>
+            <label for="username">Username</label>
+          </p-floatLabel>
+          <button type="button" pButton icon="pi pi-user" class="p-button mb-5"></button>
+        </p-inputGroup>
+        <p-inputGroup>
+          <p-floatLabel class="w-full">
+            <p-password
+              id="password"
+              class="border-noround-right"
+              formControlName="password"
+              promptLabel="Choose a password"
+              weakLabel="Too simple"
+              mediumLabel="Average complexity"
+              strongLabel="Complex password"
+            />
+            <label for="password">Password</label>
+          </p-floatLabel>
+          <button type="button" pButton icon="pi pi-key" class="p-button"></button>
+        </p-inputGroup>
+        <p-button
+        type="submit"
+        [disabled]="!registerForm.valid"
+        class="mt-5 w-full"
+        label="Submit"
+        icon="pi pi-check"/>
+      </p-panel>
+    </form>
+  </div>
+</div>
+

@@ -1,10 +1,10 @@
 import {CanActivateFn, Router} from '@angular/router';
-import { LocalStorageService } from '../services/localstorage.service';
-import { LoginService } from '../services/login.service';
+import { LocalStorageService } from '../auth_services/localstorage.service';
+import { LoginService } from '../auth_services/login.service';
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
-import { JWTTokenService } from '../services/jwt-token.service';
+import { JWTTokenService } from '../auth_services/jwt-token.service';
 
 @Injectable({
   providedIn: 'root'

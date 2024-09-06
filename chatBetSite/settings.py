@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'chat',
+    'bet',
+    'accounts'
 ]
 
 MIDDLEWARE = [
@@ -114,6 +117,8 @@ SIMPLE_JWT = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+
+AUTH_USER_MODEL = 'accounts.UserData'
 
 AUTH_PASSWORD_VALIDATORS = [
     {

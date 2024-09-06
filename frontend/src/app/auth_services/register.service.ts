@@ -9,7 +9,7 @@ import {tap} from "rxjs/operators";
 })
 export class RegisterService {
 
-  private apiUrl = 'http://127.0.0.1:8000/api/token/'; // Your API endpoint
+  private apiUrl = 'http://127.0.0.1:8000/api/register/'; // Your API endpoint
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
@@ -22,9 +22,6 @@ export class RegisterService {
       .pipe(
         tap((response: any) => {
           // Assuming the response contains the tokens
-          console.log(response) // Adjust according to your API response
-          // this.authService.setToken(access);  // Store the access token
-          // localStorage.setItem('refreshToken', refresh);  // Store the refresh token
         })
       );
   }

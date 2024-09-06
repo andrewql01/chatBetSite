@@ -3,8 +3,8 @@ import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
-import {HTTP_INTERCEPTORS, provideHttpClient, withFetch} from "@angular/common/http";
-import {UniversalInterceptor} from "./interceptors/universal.interceptor";
+import {HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi} from "@angular/common/http";
+import {TokenInterceptor} from "./interceptors/token-interceptor.service";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -12,7 +12,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(),
     provideAnimations(),
-    provideHttpClient(withFetch()),
-    { provide: HTTP_INTERCEPTORS, useClass: UniversalInterceptor, multi: true },
+    provideHttpClient(withFetch(), withInterceptorsFromDi()),
+    { provide: HTTP_INTERCEPTORS, useClass:TokenInterceptor, multi: true },
   ],
 };

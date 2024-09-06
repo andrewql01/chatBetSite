@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import { ImportsModule} from "../../imports";
-import {RegisterService} from "../../services/register.service";
+import {RegisterService} from "../../auth_services/register.service";
 import {Router} from "@angular/router";
 
 @Component({
@@ -28,11 +28,11 @@ export class RegisterComponent {
   const { email, username, password } = this.registerForm.value;
     this.registerService.signUp(email, username, password).subscribe({
       next: (response) => {
-        console.log('Login successful:', response);
-        this.router.navigate(['/main']);
+        console.log('Register successful:', response);
+        this.router.navigate(['/login']);
       },
       error: (error) => {
-        console.error('Login failed:', error);
+        console.error('Register failed:', error);
         // Handle error (e.g., show an error message)
       },
     });

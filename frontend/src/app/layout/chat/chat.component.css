@@ -1,0 +1,12 @@
+.message-container{
+  display: flex;
+}
+/* Align messages from the current user to the right */
+.message-right {
+  justify-content: flex-end;
+}
+
+/* Align messages from other users to the left */
+.message-left {
+  justify-content: flex-start;
+}

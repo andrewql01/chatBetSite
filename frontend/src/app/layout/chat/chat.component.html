@@ -1,13 +1,13 @@
 <p-panel class="flex flex-column h-full w-full">
   <p-scrollPanel class="flex-grow-1 overflow-auto">
-    <div class="message">
-      <p-card>
-        <!-- Your message content -->
-      </p-card>
+    <div *ngFor="let message of messages" [ngClass]="{'message-right': message.isCurrentUser, 'message-left': !message.isCurrentUser}" class="message-container">
+      <p-button styleClass="bg-primary m-1">
+        {{ message.text }}
+      </p-button>
     </div>
   </p-scrollPanel>
   <p-inputGroup class="p-2 border-top">
-    <input type="text" pInputText placeholder="Send a message!" class="flex-grow-1" />
-    <button type="button" pButton icon="pi pi-send" class="p-button"></button>
+    <input type="text" pInputText placeholder="Send a message!" class="flex-grow-1" [(ngModel)]="newMessage" />
+    <button type="button" pButton icon="pi pi-send" class="p-button" (click)="onSendMessage(newMessage)"></button>
   </p-inputGroup>
 </p-panel>

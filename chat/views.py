@@ -31,6 +31,7 @@ class MessageViewSet(ListAPIView):
 
     def get_queryset(self):
         chat_id = self.request.query_params.get('chat_uuid')
+
         if chat_id:
             return Message.objects.filter(chat__uuid=chat_id).order_by('created_at')
         return Message.objects.none()

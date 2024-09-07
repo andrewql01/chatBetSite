@@ -1,0 +1,20 @@
+<p-panel>
+  <p-panel class="flex col-3">
+    <p-header>Create a new chat</p-header>
+    <form [formGroup]="chatCreateForm" (ngSubmit)="onSubmit()" class="w-full" novalidate>
+      <p-inputGroup>
+                <p-floatLabel>
+                  <input pInputText id="name" formControlName="name" class="border-noround-right"/>
+                  <label for="name">Chat Name</label>
+                </p-floatLabel>
+                <button type="button" pButton icon="pi pi-comments" class="p-button mb-3"></button>
+      </p-inputGroup>
+      <p-button
+              type="submit"
+              [disabled]="!chatCreateForm.valid"
+              class="w-full"
+              label="Submit"
+              icon="pi pi-check"/>
+    </form>
+  </p-panel>
+</p-panel>

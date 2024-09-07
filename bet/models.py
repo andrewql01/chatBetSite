@@ -27,7 +27,7 @@ class OverUnderSubjects(models.TextChoices):
     CORNERS = 'CORNERS', 'Corners'
 
 class Sport(models.Model):
-    id=models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
 
@@ -35,7 +35,7 @@ class Sport(models.Model):
         return self.name
 
 class League(models.Model):
-    id=models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE, related_name='leagues')
     description = models.TextField(blank=True, null=True)
@@ -44,7 +44,7 @@ class League(models.Model):
         return f'{self.name} ({self.sport.name})'
 
 class Team(models.Model):
-    id=models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE, related_name='teams')
     league = models.ForeignKey(League, on_delete=models.CASCADE, related_name='teams', blank=True, null=True)
@@ -54,7 +54,7 @@ class Team(models.Model):
         return self.name
 
 class Event(models.Model):
-    id=models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     home_team = models.ForeignKey(Team, related_name='home_team_events', on_delete=models.CASCADE)
     guest_team = models.ForeignKey(Team, related_name='guest_team_events', on_delete=models.CASCADE)
@@ -66,7 +66,7 @@ class Event(models.Model):
         return f'{self.name} ({self.league.name})'
 
 class Bet(models.Model):
-    id=models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
+    id = models.AutoField(primary_key=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bets')
     bet_type = models.CharField(max_length=10, choices=BetTypes.choices)
     odds = models.DecimalField(max_digits=6, decimal_places=2)
@@ -96,7 +96,7 @@ class HeadToHeadBet(Bet):
         return f'Head-to-Head Bet {self.id} on {self.event.name} - {self.event.home_team.name} vs {self.event.guest_team.name}'
 
 class MultiBet(models.Model):
-    id=models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(UserData, on_delete=models.CASCADE, related_name='multi_bets')
     bets = models.ManyToManyField(Bet, related_name='multi_bets')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)

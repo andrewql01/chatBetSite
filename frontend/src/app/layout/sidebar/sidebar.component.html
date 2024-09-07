@@ -1,13 +1,23 @@
 <p-menu [model]="items" class="flex h-full">
     <ng-template pTemplate="item" let-item>
-        <ng-container *ngIf="item.route; else elseBlock">
-            <a [routerLink]="item.route" class="p-menuitem-link">
+        <ng-container *ngIf="item.items?.length; else singleItem">
+            <a class="p-menuitem-link flex flex-column">
+                <div class="w-full">
                 <span [class]="item.icon"></span>
                 <span class="ml-2">{{ item.label }}</span>
+                </div>
+                <ul *ngIf="item.items">
+                    <li *ngFor="let subItem of item.items">
+                        <a (click)="subItem.command()" class="p-menuitem-link">
+                            <span [class]="subItem.icon"></span>
+                            <span class="ml-2">{{ subItem.label }}</span>
+                        </a>
+                    </li>
+                </ul>
             </a>
         </ng-container>
-        <ng-template #elseBlock>
-            <a [href]="item.url" class="p-menuitem-link">
+        <ng-template #singleItem>
+            <a [routerLink]="item.route" class="p-menuitem-link">
                 <span [class]="item.icon"></span>
                 <span class="ml-2">{{ item.label }}</span>
             </a>

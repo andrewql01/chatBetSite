@@ -3,10 +3,14 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import Chat, Message
 from accounts.models import UserData
+from .serializers import UserSerializer  # Import your serializer
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
+        if not self.scope['user'].is_authenticated:
+            await self.close()
+
         self.user = self.scope['user']
         self.room_uuid = self.scope['url_route']['kwargs']['room_uuid']
         self.room_group_name = f'chat_{self.room_uuid}'
@@ -37,7 +41,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {
                     'type': 'user_typing',
-                    'username': self.user.username,
+                    'user': await self.serialize_user(self.user),
                     'typing': typing,
                 }
             )
@@ -51,31 +55,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'chat_message',
                     'message': message,
-                    'username': self.user.username
+                    'user': await self.serialize_user(self.user),
                 }
             )
 
     async def chat_message(self, event):
         message = event['message']
-        username = event['username']
+        user = event['user']
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'message': message,
-            'username': username,
+            'user': user,
         }))
 
     async def user_typing(self, event):
-        username = event['username']
         typing = event['typing']
+        user = event['user']
 
         # Send typing notification to WebSocket
         await self.send(text_data=json.dumps({
             'typing': typing,
-            'username': username,
+            'user': user,
         }))
 
     @database_sync_to_async
     def save_message(self, user, message):
         chat = Chat.objects.get(uuid=self.room_uuid)
         Message.objects.create(user=user, chat=chat, text=message)
+
+    async def serialize_user(self, user):
+        # Use UserSerializer to serialize the user
+        serializer = UserSerializer(user)
+        return serializer.data

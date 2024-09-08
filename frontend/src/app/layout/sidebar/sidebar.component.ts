@@ -3,7 +3,7 @@ import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
 import { ImportsModule } from '../../imports';
 import {Chat} from "../../classes/chat";
-import {UserService} from "../../auth_services/user.service";
+import {UserService} from "../../user_services/user.service";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
 
 

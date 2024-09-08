@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'daphne',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',

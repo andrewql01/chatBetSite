@@ -5,8 +5,10 @@ import {InputGroupModule} from "primeng/inputgroup";
 import {InputTextModule} from "primeng/inputtext";
 import {PaginatorModule} from "primeng/paginator";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import {UserService} from "../../auth_services/user.service";
+import {UserService} from "../../user_services/user.service";
 import {ImportsModule} from "../../imports";
+import {User} from "../../classes/user";
+import {Chat} from "../../classes/chat";
 
 @Component({
   selector: 'app-dashboard',
@@ -26,14 +28,37 @@ import {ImportsModule} from "../../imports";
 })
 export class DashboardComponent {
   chatCreateForm: FormGroup;
+  addChatUserForm: FormGroup;
+  user: User | undefined;
+  users: User[] | undefined;
+  chat: Chat | undefined;
+  chats: Chat[] | undefined;
 
   constructor(private userService: UserService) {
-          this.chatCreateForm = new FormGroup({
+    this.chatCreateForm = new FormGroup({
       name: new FormControl('', [Validators.required]),
-      })
+      });
+
+    this.userService.getAllUsers().subscribe({
+      next: (response) => {
+        this.users = response;
+      }
+    });
+
+    this.userService.getUserChats().subscribe({
+      next: (response) => {
+        this.chats = response;
+      }
+    })
+
+    this.addChatUserForm =  new FormGroup({
+      user: new FormControl('', [Validators.required]),
+      chat: new FormControl('', [Validators.required]),
+    })
+
   }
 
-  onSubmit() {
+  createChat() {
     const { name } = this.chatCreateForm.value;
     this.userService.createChat(name).subscribe({
       next: (response) => {
@@ -43,5 +68,15 @@ export class DashboardComponent {
         console.log(err)
       }
     })
+  }
+
+  addUserToChat() {
+    const { user, chat } = this.addChatUserForm.value;
+    this.userService.addUserToChat(user.id, chat.uuid).subscribe({
+      next: (response) => {
+        console.log(response)
+      }
+    })
+
   }
 }

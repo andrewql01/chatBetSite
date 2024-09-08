@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { WebSocketSubject } from 'rxjs/webSocket';
-import {catchError, map, Observable, of, throwError} from 'rxjs';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Message } from '../classes/message';
-import { AuthService } from '../auth_services/auth.service'; // Ensure you have an AuthService to provide the token
+import { User } from '../classes/user'; // Import the User interface
+import { AuthService } from '../auth_services/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,14 +20,12 @@ export class ChatService {
       this.disconnect();
     }
 
-    // Get the JWT token from the AuthService
-    const token = this.authService.getToken(); // Implement getToken() method in AuthService
+    const token = this.authService.getToken();
     if (!token) {
       console.error('No JWT token available');
       return;
     }
 
-    // Include the token as a query parameter in the WebSocket URL
     this.url = `ws://localhost:8000/ws/chat/${roomUuid}/?token=${token}`;
     this.socket$ = new WebSocketSubject(this.url);
   }
@@ -37,9 +36,9 @@ export class ChatService {
     }
   }
 
-  sendMessage(message: string): void {
+  sendMessage(message: any): void {
     if (this.socket$) {
-      this.socket$.next({ message });
+      this.socket$.next({ message: message });
     }
   }
 
@@ -49,10 +48,23 @@ export class ChatService {
     }
   }
 
-  getMessages(): Observable<Message[]> {
+  getMessages(): Observable<Message> {
     return this.socket$.asObservable().pipe(
-      map(data => Array.isArray(data) ? data : [data]),
+      map(data => {
+        if (data.message){
+          return data.message;
+        }
+        return null;
+      })
     )
+  }
+
+  getTypingStatus(): Observable<{ user: User, typing: boolean }> {
+    return this.socket$.asObservable().pipe(
+      map(data => {
+        return data;
+      })
+    );
   }
 
   fetchInitialMessages(roomUuid: string): Observable<Message[]> {
@@ -61,7 +73,7 @@ export class ChatService {
     return this.http.get<Message[]>(`/api/chats/messages/`, { params, headers })
       .pipe(
         catchError(error => {
-          console.error('Error response:', error); // Log the error
+          console.error('Error response:', error);
           return throwError(error);
         })
       );

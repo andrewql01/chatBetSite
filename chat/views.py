@@ -1,6 +1,8 @@
 from django.shortcuts import render
+from rest_framework import status
+from rest_framework.authtoken.admin import User
 from rest_framework.decorators import permission_classes
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -40,3 +42,24 @@ class MessageViewSet(ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class AddUserToChatView(APIView):
+    # handle when user is already added ect
+    def put(self, request, *args, **kwargs):
+        chat_id = request.data.get('chatId')
+        user_id = request.data.get('userId')
+        # Validate the data
+        if not chat_id or not user_id:
+            return Response({'error': 'Chat ID and User ID are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get chat and user objects
+        chat = get_object_or_404(Chat, uuid=chat_id)
+        user = get_object_or_404(User, id=user_id)
+
+        # Add user to chat
+        if user not in chat.users.all():
+            chat.users.add(user)
+            return Response({'message': 'User added to chat successfully.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'User is already in this chat.'}, status=status.HTTP_400_BAD_REQUEST)

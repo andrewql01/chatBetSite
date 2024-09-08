@@ -10,3 +10,17 @@
 .message-left {
   justify-content: flex-start;
 }
+
+:host.ng-star-inserted{
+  height: 100% !important;
+}
+
+#messageContainer.container {
+    overflow-y: scroll;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+#messageContainer::-webkit-scrollbar { /* WebKit */
+    width: 0;
+    height: 0;
+}

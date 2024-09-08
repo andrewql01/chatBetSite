@@ -1,7 +1,7 @@
 from django.urls import include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from accounts.views import RegisterView, CurrentUserView
-from chat.views import UserChatsView, ChatCreateView, MessageViewSet
+from accounts.views import RegisterView, CurrentUserView, GetUsersView
+from chat.views import UserChatsView, ChatCreateView, MessageViewSet, AddUserToChatView
 
 """
 URL configuration for chatBetSite project.
@@ -33,4 +33,6 @@ urlpatterns = [
     path('api/users/chats/', UserChatsView.as_view(), name='user_chats'),
     path('api/users/create-chat/', ChatCreateView.as_view(), name='create-chat'),
     path('api/chats/messages/', MessageViewSet.as_view(), name='get_messages'),
+    path('api/users/get-all-users/', GetUsersView.as_view(), name='get_all_users'),
+    path('api/users/add-chat-user/', AddUserToChatView.as_view(), name='add_chat_user'),
 ]

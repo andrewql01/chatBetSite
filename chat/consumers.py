@@ -3,7 +3,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import Chat, Message
 from accounts.models import UserData
-from .serializers import UserSerializer  # Import your serializer
+from .serializers import UserSerializer, MessageSerializer
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -35,38 +36,40 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data.get('message')
         typing = data.get('typing')
 
-        if typing:
-            # Broadcast that a user is typing
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'user_typing',
-                    'user': await self.serialize_user(self.user),
-                    'typing': typing,
-                }
-            )
+        if typing is not None:
+            await self.handle_typing(typing)
         elif message:
-            # Save the message in the database
-            await self.save_message(self.user, message)
+            await self.handle_message(message)
 
-            # Broadcast the message to the group
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'chat_message',
-                    'message': message,
-                    'user': await self.serialize_user(self.user),
-                }
-            )
+    async def handle_message(self, message):
+        # Save the message in the database
+        saved_message = await self.save_message(self.user, message)
+        # Broadcast the message to the group
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': await self.serialize_message(saved_message),
+            }
+        )
+
+    async def handle_typing(self, typing):
+        # Broadcast that a user is typing
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'user_typing',
+                'user': await self.serialize_user(self.user),
+                'typing': typing,
+            }
+        )
 
     async def chat_message(self, event):
         message = event['message']
-        user = event['user']
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'message': message,
-            'user': user,
         }))
 
     async def user_typing(self, event):
@@ -82,9 +85,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def save_message(self, user, message):
         chat = Chat.objects.get(uuid=self.room_uuid)
-        Message.objects.create(user=user, chat=chat, text=message)
+        message = Message.objects.create(user=user, chat=chat, text=message)
+        return message
 
     async def serialize_user(self, user):
         # Use UserSerializer to serialize the user
         serializer = UserSerializer(user)
+        return serializer.data
+
+    async def serialize_message(self, message):
+        # Use UserSerializer to serialize the user
+        serializer = MessageSerializer(message)
         return serializer.data

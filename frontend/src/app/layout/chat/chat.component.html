@@ -1,13 +1,22 @@
+<!-- Chat panel (messages and input) -->
 <p-panel class="flex flex-column h-full w-full">
-  <p-scrollPanel class="flex-grow-1 overflow-auto">
+  <!-- Messages Container -->
+  <div #messagesContainer id="messageContainer" class="flex-grow-1 overflow-auto" style="height: 0; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column;">
+    <div class="mt-auto">
     <div *ngFor="let message of messages" [ngClass]="{'message-right': message.isCurrentUser, 'message-left': !message.isCurrentUser}" class="message-container">
       <p-button styleClass="bg-primary m-1">
         {{ message.text }}
       </p-button>
     </div>
-  </p-scrollPanel>
-  <p-inputGroup class="p-2 border-top">
-    <input type="text" pInputText placeholder="Send a message!" class="flex-grow-1" [(ngModel)]="newMessage" />
+      <div *ngIf="otherUserTyping" class="typing-indicator">
+        The other user is typing...
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="p-2 mt-auto w-full flex">
+    <input type="text" (input)="onTyping()" (keydown.enter)="onSendMessage(newMessage)" pInputText placeholder="Send a message!" class="flex-grow-1 mr-2" [(ngModel)]="newMessage" />
     <button type="button" pButton icon="pi pi-send" class="p-button" (click)="onSendMessage(newMessage)"></button>
-  </p-inputGroup>
+  </div>
 </p-panel>

@@ -1,45 +1,47 @@
-<p-panel class="container">
-  <p-panel class="flex col-3">
-    <p-header>Create a new chat</p-header>
-    <form [formGroup]="chatCreateForm" (ngSubmit)="createChat()" class="w-full" novalidate>
-      <p-inputGroup>
-                <p-floatLabel>
-                  <input pInputText id="name" formControlName="name" class="border-noround-right"/>
-                  <label for="name">Chat Name</label>
-                </p-floatLabel>
-                <button type="button" pButton icon="pi pi-comments" class="p-button mb-3"></button>
-      </p-inputGroup>
-      <p-button
-              type="submit"
-              [disabled]="!chatCreateForm.valid"
-              class="w-full"
-              label="Submit"
-              icon="pi pi-check"/>
-    </form>
-  </p-panel>
-  <p-panel class="flex col-3">
-    <p-header>Add a user to chat</p-header>
-    <form [formGroup]="addChatUserForm" (ngSubmit)="addUserToChat()" class="w-full flex flex-column gap-3" novalidate>
-              <p-dropdown
-                [options]="users"
-                formControlName="user"
-                optionLabel="username"
-                placeholder="Select a User"
-                class="w-full"/>
-              <p-dropdown
-                [options]="chats"
-                formControlName="chat"
-                optionLabel="name"
-                placeholder="Select a Chat"
-                class="w-full"/>
-      <p-button
-              type="submit"
-              [disabled]="!addChatUserForm.valid"
-              class="w-full"
-              label="Submit"
-              icon="pi pi-check"/>
-    </form>
-  </p-panel>
-  <app-bet-container></app-bet-container>
-</p-panel>
+<div class="container flex flex-row w-full">
+  <div class="col-6">
+    <p-panel class="flex col-3">
+      <p-header>Create a new chat</p-header>
+      <form [formGroup]="chatCreateForm" (ngSubmit)="createChat()" class="w-full" novalidate>
+        <p-inputGroup>
+                  <p-floatLabel>
+                    <input pInputText id="name" formControlName="name" class="border-noround-right"/>
+                    <label for="name">Chat Name</label>
+                  </p-floatLabel>
+                  <button type="button" pButton icon="pi pi-comments" class="p-button mb-3"></button>
+        </p-inputGroup>
+        <p-button
+                type="submit"
+                [disabled]="!chatCreateForm.valid"
+                class="w-full"
+                label="Submit"
+                icon="pi pi-check"/>
+      </form>
+    </p-panel>
+    <p-panel class="flex col-3">
+      <p-header>Add a user to chat</p-header>
+      <form [formGroup]="addChatUserForm" (ngSubmit)="addUserToChat()" class="w-full flex flex-column gap-3" novalidate>
+                <p-dropdown
+                  [options]="users"
+                  formControlName="user"
+                  optionLabel="username"
+                  placeholder="Select a User"
+                  class="w-full"/>
+                <p-dropdown
+                  [options]="chats"
+                  formControlName="chat"
+                  optionLabel="name"
+                  placeholder="Select a Chat"
+                  class="w-full"/>
+        <p-button
+                type="submit"
+                [disabled]="!addChatUserForm.valid"
+                class="w-full"
+                label="Submit"
+                icon="pi pi-check"/>
+      </form>
+    </p-panel>
+  </div>
+  <app-bet-container class="col-6"></app-bet-container>
+</div>
 

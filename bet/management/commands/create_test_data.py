@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from decimal import Decimal
 from bet.factories import SportFactory, LeagueFactory, TeamFactory, EventFactory, OverUnderBetFactory, WinOnlyBetFactory
-from bet.models import WinOnlyOutcomes, OverUnderSubjects, BetTypes, OverUnderBet, WinOnlyBet, Event, Bet
+from bet.models import WinOnlyOutcomes, BetSubjects, BetTypes, OverUnderBet, WinOnlyBet, Event, Bet
 
 
 class Command(BaseCommand):
@@ -29,6 +29,7 @@ class Command(BaseCommand):
             # Create exactly 3 WinOnlyBet instances for each event
             for outcome in WinOnlyOutcomes:
                 win_only_bet = WinOnlyBetFactory.create(
+                    subject=BetSubjects.WINNING_TEAM,
                     event=event,
                     predicted_winner=outcome
                 )

@@ -32,10 +32,11 @@ class BetOutcomes(models.TextChoices):
     REFUND = 'REFUND', 'Refund'
     IN_PROGRESS = 'IN_PROG', 'In Progress'
 
-class OverUnderSubjects(models.TextChoices):
+class BetSubjects(models.TextChoices):
     CARDS = 'CARDS', 'Cards'
     GOALS = 'GOALS', 'Goals'
     CORNERS = 'CORNERS', 'Corners'
+    WINNING_TEAM = 'WINNING_TEAM', 'Winning Team'
 
 class Sport(models.Model):
     id = models.AutoField(primary_key=True)
@@ -69,6 +70,7 @@ class Team(models.Model):
 
 class Event(models.Model):
     id = models.AutoField(primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     home_team = models.ForeignKey(Team, related_name='home_team_events', on_delete=models.CASCADE)
     guest_team = models.ForeignKey(Team, related_name='guest_team_events', on_delete=models.CASCADE)
@@ -81,6 +83,7 @@ class Event(models.Model):
 
 class Bet(PolymorphicModel):
     id = models.AutoField(primary_key=True)
+    subject = models.CharField(max_length=20, choices=BetSubjects.choices)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bets')
     bet_type = models.CharField(choices=BetTypes.choices)
     odds = models.DecimalField(max_digits=6, decimal_places=2)
@@ -101,7 +104,6 @@ class OverUnderBet(Bet):
     bet_type = BetTypes.OVER_UNDER
     threshold = models.DecimalField(max_digits=5, decimal_places=2)
     direction = models.CharField(max_length=10, choices=[('OVER', 'Over'), ('UNDER', 'Under')])
-    subject = models.CharField(max_length=10, choices=OverUnderSubjects.choices)
 
     def save(self, *args, **kwargs):
         if not self.bet_type:  # Ensure bet_type is set to WIN_ONLY

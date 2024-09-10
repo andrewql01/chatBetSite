@@ -5,7 +5,7 @@ from decimal import Decimal
 from factory import fuzzy
 
 from .models import Sport, League, Team, Event, Bet, OverUnderBet, WinOnlyBet, BetOutcomes, \
-    OverUnderSubjects, BetTypes, SportTypes, WinOnlyOutcomes
+    BetSubjects, BetTypes, SportTypes, WinOnlyOutcomes
 
 class SportFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -59,6 +59,7 @@ class BetFactory(factory.django.DjangoModelFactory):
     event = factory.SubFactory(EventFactory)
     odds = fuzzy.FuzzyDecimal(low=1, high=20, precision=2)
     outcome = factory.Iterator(BetOutcomes.values)
+    subject = factory.Iterator(BetSubjects.values)
 
 
 class OverUnderBetFactory(BetFactory):
@@ -67,7 +68,6 @@ class OverUnderBetFactory(BetFactory):
 
     threshold = fuzzy.FuzzyDecimal(low=1, high=5, precision=1)
     direction = fuzzy.FuzzyChoice(choices=['OVER', 'UNDER'])
-    subject = factory.Iterator(OverUnderSubjects.values)
 
 
 class WinOnlyBetFactory(BetFactory):

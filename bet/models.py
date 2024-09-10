@@ -1,19 +1,30 @@
 import uuid
 from decimal import Decimal
+
+import polymorphic
+from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from polymorphic.models import PolymorphicModel
 
 from accounts.models import UserData
 
+class SportTypes(models.TextChoices):
+    FOOTBALL = 'FOOTBALL', 'Football'
+    BASKETBALL = 'BASKETBALL', 'Basketball'
+    TENNIS = 'TENNIS', 'Tennis'
+    CRICKET = 'CRICKET', 'Cricket'
+    BASEBALL = 'BASEBALL', 'Baseball'
+    HOCKEY = 'HOCKEY', 'Hockey'
+
+class WinOnlyOutcomes(models.IntegerChoices):
+    DRAW = 0, 'Draw'
+    HOME_WIN = 1, 'Home Team Win'
+    GUEST_WIN = 2, 'Guest Team Win'
 
 class BetTypes(models.TextChoices):
-    HEAD_TO_HEAD = 'H2H', 'Head-to-Head'
-    OVER_UNDER = 'OU', 'Over/Under'
-    PLAYER_PERFORMANCE = 'PP', 'Player Performance'
-    FIRST_HALF_WINNER = 'FHW', 'First Half Winner'
-    TOTAL_POINTS = 'TP', 'Total Points'
-    CORRECT_SCORE = 'CS', 'Correct Score'
-    CARDS = 'CARDS', 'Cards'
-    CORNERS = 'CORNERS', 'Corners'
+    WIN_ONLY = 'WinOnlyBet'
+    OVER_UNDER = 'OverUnderBet'
 
 class BetOutcomes(models.TextChoices):
     WIN = 'WIN', 'Win'
@@ -28,8 +39,9 @@ class OverUnderSubjects(models.TextChoices):
 
 class Sport(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(choices=SportTypes.choices, unique=True)
     description = models.TextField(blank=True, null=True)
+    image_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -39,6 +51,7 @@ class League(models.Model):
     name = models.CharField(max_length=255, unique=True)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE, related_name='leagues')
     description = models.TextField(blank=True, null=True)
+    image_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.name} ({self.sport.name})'
@@ -49,6 +62,7 @@ class Team(models.Model):
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE, related_name='teams')
     league = models.ForeignKey(League, on_delete=models.CASCADE, related_name='teams', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    image_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -65,14 +79,15 @@ class Event(models.Model):
     def __str__(self):
         return f'{self.name} ({self.league.name})'
 
-class Bet(models.Model):
+class Bet(PolymorphicModel):
     id = models.AutoField(primary_key=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='bets')
-    bet_type = models.CharField(max_length=10, choices=BetTypes.choices)
+    bet_type = models.CharField(choices=BetTypes.choices)
     odds = models.DecimalField(max_digits=6, decimal_places=2)
-    outcome = models.CharField(max_length=10, choices=BetOutcomes.choices, blank=False, default=BetOutcomes.IN_PROGRESS)
+    outcome = models.CharField(choices=BetOutcomes.choices, blank=False, default=BetOutcomes.IN_PROGRESS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     def save(self, *args, **kwargs):
         if self.outcome == BetOutcomes.REFUND:
@@ -83,17 +98,31 @@ class Bet(models.Model):
         return f'Bet {self.id} on {self.event.name} - {self.bet_type}'
 
 class OverUnderBet(Bet):
+    bet_type = BetTypes.OVER_UNDER
     threshold = models.DecimalField(max_digits=5, decimal_places=2)
     direction = models.CharField(max_length=10, choices=[('OVER', 'Over'), ('UNDER', 'Under')])
     subject = models.CharField(max_length=10, choices=OverUnderSubjects.choices)
 
+    def save(self, *args, **kwargs):
+        if not self.bet_type:  # Ensure bet_type is set to WIN_ONLY
+            self.bet_type = BetTypes.OVER_UNDER
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f'Over/Under Bet {self.id} on {self.event.name} - {self.direction} {self.threshold}'
 
-class HeadToHeadBet(Bet):
-    predicted_winner = models.IntegerField(blank=True, null=True)
+class WinOnlyBet(Bet):
+    bet_type = BetTypes.WIN_ONLY
+    predicted_winner = models.IntegerField(choices=WinOnlyOutcomes.choices, blank=True, null=True)
+
     def __str__(self):
-        return f'Head-to-Head Bet {self.id} on {self.event.name} - {self.event.home_team.name} vs {self.event.guest_team.name}'
+        outcome = dict(WinOnlyOutcomes.choices).get(self.predicted_winner, "Unknown")
+        return f'Win-Only Bet {self.id} on {self.event.name} - {self.event.home_team.name} vs {self.event.guest_team.name} (Predicted: {outcome})'
+
+    def save(self, *args, **kwargs):
+        if not self.bet_type:  # Ensure bet_type is set to WIN_ONLY
+            self.bet_type = BetTypes.WIN_ONLY
+        super().save(*args, **kwargs)
 
 class MultiBet(models.Model):
     id = models.AutoField(primary_key=True)

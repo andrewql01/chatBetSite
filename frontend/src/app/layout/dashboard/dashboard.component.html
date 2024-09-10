@@ -1,4 +1,4 @@
-<p-panel>
+<p-panel class="container">
   <p-panel class="flex col-3">
     <p-header>Create a new chat</p-header>
     <form [formGroup]="chatCreateForm" (ngSubmit)="createChat()" class="w-full" novalidate>
@@ -40,4 +40,6 @@
               icon="pi pi-check"/>
     </form>
   </p-panel>
+  <app-bet-container></app-bet-container>
 </p-panel>
+

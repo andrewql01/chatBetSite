@@ -6,7 +6,6 @@ import { User } from '../../classes/user';
 import {map, Subscription} from 'rxjs';
 import { UserService } from '../../user_services/user.service';
 import {ImportsModule} from "../../imports";
-import {timeoutProvider} from "rxjs/internal/scheduler/timeoutProvider";
 
 @Component({
   selector: 'app-chat',

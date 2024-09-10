@@ -9,6 +9,8 @@ import {UserService} from "../../user_services/user.service";
 import {ImportsModule} from "../../imports";
 import {User} from "../../classes/user";
 import {Chat} from "../../classes/chat";
+import {BetService} from "../../bet_services/bet.service";
+import {BetContainerComponent} from "../bet-container/bet-container.component";
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +23,8 @@ import {Chat} from "../../classes/chat";
     InputTextModule,
     PaginatorModule,
     ReactiveFormsModule,
-    ImportsModule
+    ImportsModule,
+    BetContainerComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -34,10 +37,17 @@ export class DashboardComponent {
   chat: Chat | undefined;
   chats: Chat[] | undefined;
 
-  constructor(private userService: UserService) {
+  constructor(private userService: UserService,
+              private betService: BetService,) {
+
     this.chatCreateForm = new FormGroup({
       name: new FormControl('', [Validators.required]),
       });
+
+    this.addChatUserForm =  new FormGroup({
+      user: new FormControl('', [Validators.required]),
+      chat: new FormControl('', [Validators.required]),
+    })
 
     this.userService.getAllUsers().subscribe({
       next: (response) => {
@@ -49,11 +59,6 @@ export class DashboardComponent {
       next: (response) => {
         this.chats = response;
       }
-    })
-
-    this.addChatUserForm =  new FormGroup({
-      user: new FormControl('', [Validators.required]),
-      chat: new FormControl('', [Validators.required]),
     })
 
   }

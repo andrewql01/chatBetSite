@@ -1,13 +1,37 @@
 <!-- Chat panel (messages and input) -->
-<p-panel class="flex flex-column h-full w-full">
-  <!-- Messages Container -->
-  <div #messagesContainer id="messageContainer" class="flex-grow-1 overflow-auto" style="height: 0; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column;">
-    <div class="mt-auto">
-    <div *ngFor="let message of messages" [ngClass]="{'message-right': message.isCurrentUser, 'message-left': !message.isCurrentUser}" class="message-container">
-      <p-button styleClass="bg-primary m-1">
-        {{ message.text }}
-      </p-button>
+<p-panel [showHeader]="false" class="flex flex-column col-4 h-30rem">
+  <div class="w-full flex flex-row justify-content-between align-items-center chat-header">
+    <!-- User Avatar -->
+    <div class="flex align-items-center">
+        <p-avatar shape="circle"></p-avatar>
+        <p class="user-name ml-2">user</p>
     </div>
+    <!-- Minimize and Close Buttons -->
+    <div class="flex align-items-center">
+      <p-buttonGroup class="no-border-button-group">
+        <p-button icon="pi pi-angle-down" [outlined]="true" ></p-button>
+        <p-button icon="pi pi-times" severity="danger" [outlined]="true" class="border-none"></p-button>
+      </p-buttonGroup>
+    </div>
+</div>
+  <!-- Messages Container -->
+  <div #messagesContainer id="messageContainer" class="flex-grow-1 overflow-auto border-1 border-round border-black-alpha-30" style="height: 0; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column;">
+    <div class="mt-auto p-2">
+      <ng-container *ngFor="let message of messages;let i = index">
+          <div [ngClass]="{'message-right': message.isCurrentUser, 'message-left': !message.isCurrentUser}" class="message-container">
+            <div class="flex-column">
+              <p class='text-sm text-white-alpha-70 m-0'
+                 *ngIf="!message.isCurrentUser && (i === 0 || messages[i-1].user.username !== message.user.username)">
+                {{ message.user.username }}
+              </p>
+              <div class="flex flex-row flex-wrap align-items-center">
+                <p-button styleClass="bg-primary m-1 text-wrap" class="max-w-10rem">
+                  {{ message.text }}
+                </p-button>
+              </div>
+            </div>
+          </div>
+      </ng-container>
       <div *ngIf="otherUserTyping" class="typing-indicator">
         The other user is typing...
       </div>
@@ -15,8 +39,10 @@
   </div>
 
   <!-- Input Area -->
-  <div class="p-2 mt-auto w-full flex">
-    <input type="text" (input)="onTyping()" (keydown.enter)="onSendMessage(newMessage)" pInputText placeholder="Send a message!" class="flex-grow-1 mr-2" [(ngModel)]="newMessage" />
-    <button type="button" pButton icon="pi pi-send" class="p-button" (click)="onSendMessage(newMessage)"></button>
-  </div>
+      <div class="p-d-flex p-mt-3">
+        <span class="p-input-icon-right p-fluid w-full">
+          <i class="pi pi-send" (click)="onSendMessage(newMessage)" style="cursor: pointer;"></i>
+          <input type="text" (input)="onTyping()" pInputText [(ngModel)]="newMessage" (keyup.enter)="onSendMessage(newMessage)" placeholder="Type a message">
+        </span>
+      </div>
 </p-panel>

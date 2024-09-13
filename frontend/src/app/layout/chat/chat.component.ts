@@ -6,11 +6,12 @@ import { User } from '../../classes/user';
 import {map, Subscription} from 'rxjs';
 import { UserService } from '../../user_services/user.service';
 import {ImportsModule} from "../../imports";
+import {ButtonGroupModule} from "primeng/buttongroup";
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [ImportsModule],
+  imports: [ImportsModule, ButtonGroupModule],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
@@ -22,7 +23,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private chatSub: Subscription = new Subscription();
   private userSub: Subscription = new Subscription();
   private typingStatusSub: Subscription = new Subscription();
-  private currentUserId!: number;
+  protected currentUserId!: number;
   newMessage: string = '';
   isTyping: boolean = false;
   private typingTimeout: any;

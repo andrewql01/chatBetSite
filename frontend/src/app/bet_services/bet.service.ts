@@ -18,4 +18,5 @@ export class BetService {
     const params = new HttpParams().set('limit', limit);
     return this.http.get<SportEvent[]>(this.apiUrl + 'get-events/', { params, headers })
   }
+
 }

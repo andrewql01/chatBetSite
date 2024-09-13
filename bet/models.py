@@ -32,6 +32,10 @@ class BetOutcomes(models.TextChoices):
     REFUND = 'REFUND', 'Refund'
     IN_PROGRESS = 'IN_PROG', 'In Progress'
 
+class MultiBetState(models.TextChoices):
+    SUBMITTED = 'Submitted', 'Submitted'
+    PENDING = 'Pending', 'Pending'
+
 class BetSubjects(models.TextChoices):
     CARDS = 'CARDS', 'Cards'
     GOALS = 'GOALS', 'Goals'
@@ -128,11 +132,13 @@ class WinOnlyBet(Bet):
 
 class MultiBet(models.Model):
     id = models.AutoField(primary_key=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(UserData, on_delete=models.CASCADE, related_name='multi_bets')
     bets = models.ManyToManyField(Bet, related_name='multi_bets')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_odds = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     total_winnings = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    state = models.CharField(choices=MultiBetState.choices, blank=True, null=True)
     outcome = models.CharField(max_length=10, choices=BetOutcomes.choices, blank=False, default=BetOutcomes.IN_PROGRESS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

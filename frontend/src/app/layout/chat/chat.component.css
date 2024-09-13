@@ -24,3 +24,9 @@
     width: 0;
     height: 0;
 }
+
+.no-border-button-group ::ng-deep .p-button {
+    border: none !important;
+    box-shadow: none !important; /* Remove shadow if any */
+}
+

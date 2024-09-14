@@ -3,6 +3,7 @@ import {ChatComponent} from "../chat/chat.component";
 import {SidebarComponent} from "../sidebar/sidebar.component";
 import {TopbarComponent} from "../topbar/topbar.component";
 import {RouterOutlet} from "@angular/router";
+import {WebSocketService} from "../../web_socket_services/web-socket.service";
 
 @Component({
   selector: 'app-main',
@@ -16,6 +17,5 @@ import {RouterOutlet} from "@angular/router";
   templateUrl: './main.component.html',
   styleUrl: './main.component.css'
 })
-export class MainComponent {
-
+export class MainComponent{
 }

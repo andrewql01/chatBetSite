@@ -18,7 +18,12 @@
       <ng-container *ngFor="let bet of event.grouped_bets.WinOnlyBet.subjects.WINNING_TEAM">
         <div class="col-4 text-center p-0 m-0">
           <p class="m-0">{{ bet.predicted_winner }}</p>
-          <p-button label="{{ bet.odds }}" severity="secondary" class="w-full m-0 p-0" styleClass="p-button-sm"></p-button>
+          <p-button label="{{ bet.odds }}"
+                    severity="secondary"
+                    class="w-full m-0 p-0"
+                    styleClass="p-button-sm"
+                    (click)="addBetToMultibet(bet.id)">
+          </p-button>
         </div>
       </ng-container>
     </div>

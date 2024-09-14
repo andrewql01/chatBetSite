@@ -7,11 +7,12 @@ import {map, Subscription} from 'rxjs';
 import { UserService } from '../../user_services/user.service';
 import {ImportsModule} from "../../imports";
 import {ButtonGroupModule} from "primeng/buttongroup";
+import {BetContainerComponent} from "../bet-container/bet-container.component";
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [ImportsModule, ButtonGroupModule],
+  imports: [ImportsModule, ButtonGroupModule, BetContainerComponent],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
@@ -29,6 +30,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private typingTimeout: any;
   typingUser: User | null = null;
   otherUserTyping: boolean = false;
+  private oldRoomId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -47,6 +49,9 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     this.routeSub = this.route.paramMap.subscribe(params => {
       const newRoomId = params.get('roomId')!;
+      if (this.roomId){
+        this.oldRoomId = this.roomId;
+      }
       if (this.roomId !== newRoomId) {
         this.roomId = newRoomId;
         if (this.currentUserId) {
@@ -62,7 +67,9 @@ export class ChatComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.disconnect();// Ensure disconnection before reconnection
+    this.onSwitchChat();
+
+    this.chatService.leaveChat(this.oldRoomId);
 
     this.chatService.fetchInitialMessages(this.roomId).subscribe({
       next: (messages) => {
@@ -75,7 +82,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       error: (err) => console.error('Error fetching initial messages:', err)
     });
 
-    this.chatService.connect(this.roomId);
+    this.chatService.joinChat(this.roomId)
 
     this.chatSub = this.chatService.getMessages().subscribe(message => {
       if (message && (message.text ?? '').trim().length > 0) {
@@ -94,6 +101,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.typingUser = message.user;
           this.otherUserTyping = this.typingUser.id !== this.currentUserId;
         }
+
         else{
           this.otherUserTyping = false;
           this.typingUser = null;
@@ -148,6 +156,11 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.routeSub.unsubscribe();
     this.chatSub.unsubscribe();
     this.userSub.unsubscribe();
+    this.typingStatusSub.unsubscribe();
+  }
+
+  onSwitchChat(): void {
+    this.chatSub.unsubscribe();
     this.typingStatusSub.unsubscribe();
   }
 }

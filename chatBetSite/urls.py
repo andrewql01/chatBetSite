@@ -1,7 +1,7 @@
 from django.urls import include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from accounts.views import RegisterView, CurrentUserView, GetUsersView
-from bet.views import GetEventsView
+from bet.views import GetEventsView, InitializeMultiBetView
 from chat.views import UserChatsView, ChatCreateView, MessageViewSet, AddUserToChatView
 
 """
@@ -37,4 +37,5 @@ urlpatterns = [
     path('api/users/get-all-users/', GetUsersView.as_view(), name='get_all_users'),
     path('api/users/add-chat-user/', AddUserToChatView.as_view(), name='add_chat_user'),
     path('api/bets/get-events/', GetEventsView.as_view(), name='get_events'),
+    path('api/bets/init-multibet/', InitializeMultiBetView.as_view(), name='initialize_multibet'),
 ]

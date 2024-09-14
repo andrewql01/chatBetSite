@@ -8,9 +8,7 @@ import {TopbarComponent} from "./layout/topbar/topbar.component";
 import {LoginComponent} from "./layout/login/login.component";
 import {RegisterComponent} from "./layout/register/register.component";
 import {WelcomeComponent} from "./layout/welcome/welcome.component";
-import {HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi} from "@angular/common/http";
-import {TokenInterceptor} from "./interceptors/token-interceptor.service";
-import {Token} from "@angular/compiler";
+import {WebSocketService} from "./web_socket_services/web-socket.service";
 
 @Component({
   selector: 'app-root',

@@ -14,6 +14,10 @@ class Command(BaseCommand):
         parser.add_argument('--num-bets-per-event', type=int, default=5, help='Number of bets to create per event')
 
     def handle(self, *args, **options):
+        WinOnlyBet.objects.all().delete()
+        OverUnderBet.objects.all().delete()
+        Event.objects.all().delete()
+
         num_events = options['num_events']
         num_bets_per_event = options['num_bets_per_event']
 
@@ -33,6 +37,7 @@ class Command(BaseCommand):
                     event=event,
                     predicted_winner=outcome
                 )
+                print(win_only_bet.odds)
                 self.stdout.write(f'Created WinOnlyBet: {win_only_bet}')
 
             # Create other bets if needed

@@ -55,3 +55,109 @@ body{
   -moz-box-shadow:none;
 }
 
+/* ... (previous styles remain unchanged) ... */
+
+/* Sidebar Styles */
+.p-menu {
+  background-color: var(--panel-background);
+  border: none;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  height: 100%;
+}
+
+.p-menu .p-menuitem-link {
+  color: var(--text-color);
+  transition: all 0.3s ease;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid transparent;
+}
+
+.p-menu .p-menuitem-link:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+  border-left-color: var(--primary-color);
+}
+
+.p-menu .p-menuitem-icon {
+  color: var(--primary-color);
+  margin-right: 0.5rem;
+}
+
+.p-menu ul {
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.p-menu ul .p-menuitem-link {
+  padding: 0.5rem 1rem;
+}
+
+/* Glowing effect for active menu item */
+.p-menu .p-menuitem-link.router-link-active {
+  background-color: rgba(52, 152, 219, 0.2);
+  border-left-color: var(--primary-color);
+  position: relative;
+}
+
+.p-menu .p-menuitem-link.router-link-active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: 0 0 10px var(--primary-color);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Topbar Styles */
+.p-menubar {
+  background-color: var(--panel-background);
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.p-menubar .p-menuitem-link {
+  color: var(--text-color);
+}
+
+.p-menubar .p-menuitem-icon {
+  color: var(--primary-color);
+}
+
+.p-menubar .p-menuitem-link:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Avatar in topbar */
+.p-avatar {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: 2px solid var(--secondary-color);
+  transition: all 0.3s ease;
+}
+
+.p-avatar:hover {
+  box-shadow: 0 0 15px var(--primary-color);
+  transform: scale(1.05);
+}
+
+/* Futuristic enhancements */
+.p-menu::before,
+.p-menubar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
+  pointer-events: none;
+}
+
+
+.p-menu,
+.p-menubar {
+  position: relative;
+  animation: pulse-border 3s infinite;
+}

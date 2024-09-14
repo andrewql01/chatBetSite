@@ -11,6 +11,7 @@ import {User} from "../../classes/user";
 import {Chat} from "../../classes/chat";
 import {BetService} from "../../bet_services/bet.service";
 import {BetContainerComponent} from "../bet-container/bet-container.component";
+import {MultibetComponent} from "../multibet/multibet.component";
 
 @Component({
   selector: 'app-dashboard',
@@ -24,7 +25,8 @@ import {BetContainerComponent} from "../bet-container/bet-container.component";
     PaginatorModule,
     ReactiveFormsModule,
     ImportsModule,
-    BetContainerComponent
+    BetContainerComponent,
+    MultibetComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'

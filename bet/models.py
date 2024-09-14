@@ -18,8 +18,8 @@ class SportTypes(models.TextChoices):
     HOCKEY = 'HOCKEY', 'Hockey'
 
 class WinOnlyOutcomes(models.IntegerChoices):
-    DRAW = 0, 'Draw'
     HOME_WIN = 1, 'Home Team Win'
+    DRAW = 0, 'Draw'
     GUEST_WIN = 2, 'Guest Team Win'
 
 class BetTypes(models.TextChoices):
@@ -134,20 +134,22 @@ class MultiBet(models.Model):
     id = models.AutoField(primary_key=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(UserData, on_delete=models.CASCADE, related_name='multi_bets')
-    bets = models.ManyToManyField(Bet, related_name='multi_bets')
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    total_odds = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    total_winnings = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
-    state = models.CharField(choices=MultiBetState.choices, blank=True, null=True)
+    bets = models.ManyToManyField(Bet, related_name='multi_bets', blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    total_odds = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    total_winnings = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), blank=True, null=True)
+    state = models.CharField(choices=MultiBetState.choices, blank=True, null=True, default=MultiBetState.PENDING)
     outcome = models.CharField(max_length=10, choices=BetOutcomes.choices, blank=False, default=BetOutcomes.IN_PROGRESS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    frozen_bet_odds = models.JSONField(default=dict)
 
     def __str__(self):
         return f'MultiBet by {self.user.username} - Total Amount: {self.total_amount}'
 
     def calculate_totals(self):
         """ Calculate total odds, winnings, and result based on included bets. """
+
         if not self.bets.exists():
             self.total_odds = Decimal('0.00')
             self.total_winnings = Decimal('0.00')
@@ -180,5 +182,9 @@ class MultiBet(models.Model):
         return all_refund
 
     def save(self, *args, **kwargs):
-        self.calculate_totals()  # Calculate totals before saving
-        super().save(*args, **kwargs)
+        if self._state.adding:
+            super().save(*args, **kwargs)
+        else:
+            self.calculate_totals()  # Calculate totals before saving
+            super().save(*args, **kwargs)
+

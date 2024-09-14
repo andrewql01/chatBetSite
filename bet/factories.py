@@ -21,7 +21,6 @@ class LeagueFactory(factory.django.DjangoModelFactory):
         model = League
         django_get_or_create = ('name',)
 
-
     name = factory.Faker('word')
     sport = factory.SubFactory(SportFactory)
     description = factory.Faker('sentence')
@@ -57,8 +56,7 @@ class BetFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ('event', 'odds')
 
     event = factory.SubFactory(EventFactory)
-    odds = fuzzy.FuzzyDecimal(low=1, high=20, precision=2)
-    outcome = factory.Iterator(BetOutcomes.values)
+    odds = fuzzy.FuzzyDecimal(low=1, high=5, precision=2)
     subject = factory.Iterator(BetSubjects.values)
 
 

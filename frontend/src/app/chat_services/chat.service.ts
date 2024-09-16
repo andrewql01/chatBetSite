@@ -28,10 +28,6 @@ export class ChatService {
     })
   }
 
-  disconnect(): void {
-    this.wsService.disconnect();
-  }
-
   sendMessage(message: any): void {
     if (this.roomUuid) {
       this.wsService.sendMessage({ action: 'chat_message', message: message, room_uuid: this.roomUuid });

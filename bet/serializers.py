@@ -8,7 +8,8 @@ from rest_polymorphic.serializers import PolymorphicSerializer
 
 import bet
 from accounts.serializers import UserSerializer
-from .models import Sport, League, Team, Event, Bet, MultiBet, WinOnlyBet, OverUnderBet, BetTypes, BetSubjects
+from .models import Sport, League, Team, Event, Bet, MultiBet, WinOnlyBet, OverUnderBet, BetTypes, BetSubjects, \
+    MultiBetState
 
 
 class SportSerializer(serializers.ModelSerializer):
@@ -133,7 +134,7 @@ class MultiBetSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get('request')
-        multi_bet = MultiBet.objects.create(user=request.user)
+        multi_bet, created = MultiBet.objects.get_or_create(user=request.user, state=MultiBetState.PENDING)
         multi_bet.save()
         return multi_bet
 

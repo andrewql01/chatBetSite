@@ -22,9 +22,6 @@ export class BetContainerComponent {
         this.events = response;
       }
     })
-
-    this.multiBetService.initMultibet();
-
   }
 
   addBetToMultibet(betId: number) {

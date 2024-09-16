@@ -153,7 +153,7 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def add_bet_to_multibet(self, multibet_uuid, bet_id):
-        multibet = MultiBet.objects.get(uuid=multibet_uuid, user=self.user)
+        multibet = MultiBet.objects.get(uuid=multibet_uuid)
         bet = Bet.objects.get(id=bet_id)
         multibet.bets.add(bet)
         multibet.save()
@@ -166,16 +166,20 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
         bet.save()
         return bet
 
-    async def serialize_user(self, user):
+    @database_sync_to_async
+    def serialize_user(self, user):
         return UserSerializer(user).data
 
-    async def serialize_message(self, message):
+    @database_sync_to_async
+    def serialize_message(self, message):
         return MessageSerializer(message).data
 
-    async def serialize_bet(self, bet):
+    @database_sync_to_async
+    def serialize_bet(self, bet):
         return BetSerializer(bet).data
 
-    async def serialize_multibet(self, multibet):
+    @database_sync_to_async
+    def serialize_multibet(self, multibet):
         return MultiBetSerializer(multibet).data
 
     # Event Handlers for Sending Messages Back

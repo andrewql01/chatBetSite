@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { WebSocketService } from '../web_socket_services/web-socket.service';
 import { HttpClient } from '@angular/common/http';
+import {Observable} from "rxjs";
+import {Message} from "../classes/message";
+import {map} from "rxjs/operators";
+import {Multibet} from "../classes/multibet";
 
 @Injectable({
   providedIn: 'root'
@@ -24,33 +28,29 @@ export class MultibetService {
     this.multiBetUuid = multibetUuid;
     this.wsService.sendMessage({
       action: 'join_multibet',
-      bet_id: this.multiBetUuid
+      multibet_uuid: this.multiBetUuid
     });
   }
 
-  disconnect(): void {
-    this.wsService.disconnect();
+  getMultiBetUpdates(): Observable<Multibet | null> {
+    return this.wsService.getMessages().pipe(
+      map(data => {
+        // Check if the message type is 'multibet_update'
+        if (data?.action === 'multibet_update') {
+          return data.multibet as Multibet; // Assuming the actual Multibet object is under data.multibet
+        }
+        return null; // Return null if the type is not 'multibet_update'
+      })
+    );
   }
 
   addBetToMultibet(betId: number): void {
-    console.log(this.multiBetUuid)
     if (this.multiBetUuid) {
       this.wsService.sendMessage({
         action: 'multibet_update',
         bet_id: betId,
         multibet_uuid: this.multiBetUuid
       });
-    // } else {
-    //   this.initMultibet().subscribe({
-    //     next: data => {
-    //       this.multiBetUuid = data.uuid;
-    //       this.connectToMultibet(this.multiBetUuid);
-    //       this.addBetToMultibet(betId);
-    //     },
-    //     error: error => {
-    //       console.error('Failed to initialize multibet:', error);
-    //     }
-    //   });
     }
   }
 

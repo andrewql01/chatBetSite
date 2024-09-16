@@ -39,8 +39,7 @@ export class DashboardComponent {
   chat: Chat | undefined;
   chats: Chat[] | undefined;
 
-  constructor(private userService: UserService,
-              private betService: BetService,) {
+  constructor(private userService: UserService,) {
 
     this.chatCreateForm = new FormGroup({
       name: new FormControl('', [Validators.required]),

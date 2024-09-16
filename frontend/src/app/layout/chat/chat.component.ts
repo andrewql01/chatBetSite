@@ -8,11 +8,12 @@ import { UserService } from '../../user_services/user.service';
 import {ImportsModule} from "../../imports";
 import {ButtonGroupModule} from "primeng/buttongroup";
 import {BetContainerComponent} from "../bet-container/bet-container.component";
+import {MultibetComponent} from "../multibet/multibet.component";
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [ImportsModule, ButtonGroupModule, BetContainerComponent],
+  imports: [ImportsModule, ButtonGroupModule, BetContainerComponent, MultibetComponent],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
@@ -149,7 +150,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     if (this.typingUser?.id == this.currentUserId) {
       this.chatService.sendTypingStatus(false);
     }
-    this.chatService.disconnect();
+    this.chatService.leaveChat(this.oldRoomId);
   }
 
   ngOnDestroy(): void {

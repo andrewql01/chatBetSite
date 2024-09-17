@@ -3,7 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from chat.models import Chat, Message
 from chat.serializers import UserSerializer, MessageSerializer
 from channels.db import database_sync_to_async
-from bet.models import MultiBet, Bet
+from bet.models import MultiBet, Bet, MultiBetState
 from bet.serializers import MultiBetSerializer, BetSerializer
 
 
@@ -49,6 +49,10 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
             await self.handle_multibet_update(data)
         elif action == 'bet_update':
             await self.handle_bet_update(data)
+        elif action == 'multibet_remove_bet':
+            await self.handle_multibet_remove_bet(data)
+        elif action == 'multibet_submit':
+            await self.handle_multibet_submit(data)
         else:
             print(f"Unhandled action: {action}")
 
@@ -62,7 +66,6 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_add(new_group_name, self.channel_name)
                 self.groups_joined.add(new_group_name)
                 self.current_room = room_uuid  # Update the current room
-
 
     async def handle_leave_chat(self, data):
         """Handle leaving a chat room."""
@@ -130,6 +133,37 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
                 }
             )
 
+    async def handle_multibet_remove_bet(self, data):
+        """Handle removing bet from the multibet."""
+        multibet_uuid = data.get('multibet_uuid')
+        bet_id = data.get('bet_id')
+
+        if multibet_uuid and bet_id:
+            multibet = await self.remove_bet_from_multibet(multibet_uuid, bet_id)
+            group_name = f'multibet_{multibet_uuid}'
+            await self.channel_layer.group_send(
+                group_name,
+                {
+                    'type': 'multibet_update',
+                    'multibet': await self.serialize_multibet(multibet),
+                }
+            )
+
+    async def handle_multibet_submit(self, data):
+        """Handle multibet submit."""
+        multibet_uuid = data.get('multibet_uuid')
+
+        if multibet_uuid:
+            multibet = await self.submit_multibet(multibet_uuid)
+            group_name = f'multibet_{multibet_uuid}'
+            await self.channel_layer.group_send(
+                group_name,
+                {
+                    'type': 'multibet_submit',
+                    'multibet': await self.serialize_multibet(multibet),
+                }
+            )
+
     async def handle_bet_update(self, data):
         """Handle bet updates."""
         bet_id = data.get('bet_id')
@@ -156,6 +190,21 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
         multibet = MultiBet.objects.get(uuid=multibet_uuid)
         bet = Bet.objects.get(id=bet_id)
         multibet.bets.add(bet)
+        multibet.save()
+        return multibet
+
+    @database_sync_to_async
+    def remove_bet_from_multibet(self, multibet_uuid, bet_id):
+        multibet = MultiBet.objects.get(uuid=multibet_uuid)
+        bet = Bet.objects.get(id=bet_id)
+        multibet.bets.remove(bet)
+        multibet.save()
+        return multibet
+
+    @database_sync_to_async
+    def submit_multibet(self, multibet_uuid):
+        multibet = MultiBet.objects.get(uuid=multibet_uuid)
+        multibet.state = MultiBetState.SUBMITTED
         multibet.save()
         return multibet
 
@@ -191,6 +240,12 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
 
     async def multibet_update(self, event):
         await self.send(text_data=json.dumps({'action': 'multibet_update', 'multibet': event['multibet']}))
+
+    async def multibet_remove_bet(self, event):
+        await self.send(text_data=json.dumps({'action': 'multibet_remove_bet', 'multibet': event['multibet']}))
+
+    async def multibet_submit(self, event):
+        await self.send(text_data=json.dumps({'action': 'multibet_submit', 'multibet': event['multibet']}))
 
     async def bet_update(self, event):
         await self.send(text_data=json.dumps({'action': 'bet_update', 'bet': event['bet']}))

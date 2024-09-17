@@ -1,11 +1,11 @@
-import {Component, OnInit} from '@angular/core';
-import {CurrencyPipe, DecimalPipe} from "@angular/common";
-import {ImportsModule} from "../../imports";
-import {BetService} from "../../bet_services/bet.service";
-import {MultibetService} from "../../bet_services/multibet.service";
-import {Subscription} from "rxjs";
-import {Bet} from '../../classes/bet'
-
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CurrencyPipe, DecimalPipe } from "@angular/common";
+import { ImportsModule } from "../../imports";
+import { BetService } from "../../bet_services/bet.service";
+import { MultibetService } from "../../bet_services/multibet.service";
+import { Subscription } from "rxjs";
+import { Bet } from '../../classes/bet';
+import { Multibet } from "../../classes/multibet";
 
 @Component({
   selector: 'app-multibet',
@@ -16,42 +16,69 @@ import {Bet} from '../../classes/bet'
     ImportsModule
   ],
   templateUrl: './multibet.component.html',
-  styleUrl: './multibet.component.css'
+  styleUrls: ['./multibet.component.css']  // Fixed: styleUrl -> styleUrls
 })
-export class MultibetComponent implements OnInit {
+export class MultibetComponent implements OnInit, OnDestroy {
   protected isVisible = false;
   protected isMinimized = false;
   protected betAmount = 0;
   protected bets: Bet[] = [];
   protected total_odds: number = 0;
   protected total_winnings: number = 0;
+  protected multibet: Multibet | null = null;
   private multibetSub: Subscription = new Subscription();
 
   constructor(private betService: BetService,
               private multibetService: MultibetService) {}
 
   ngOnInit(): void {
-    this.multibetService.initMultibet()
+    // Initialize multibet
+    this.loadMultibet();
+
+    // Subscribe to WebSocket updates
     this.multibetSub = this.multibetService.getMultiBetUpdates().subscribe({
       next: (response) => {
-        if (response){
-          this.bets = response.bets.map(bet => ({
-            ...bet,
-            odds: parseFloat(bet.odds)  // Convert the odds to a number
-          }));
-          this.total_odds = response.total_odds;
-          this.total_winnings = response.total_winnings;
+        if (response.action === 'multibet_update' && response.multibet) {
+          this.updateMultibetData(response.multibet);
         }
+        else if (response.action === 'multibet_submit') {
+          // @ts-ignore
+          console.log(response.multibet.state)
+          this.loadMultibet();  // Reuse the method here
+        }
+      },
+      error: (err) => {
+        console.error('Failed to update multibet', err);
       }
     });
   }
 
-  toggleVisibility(): void {
-    this.isVisible = !this.isVisible;
+  ngOnDestroy(): void {
+    this.multibetSub.unsubscribe();
   }
 
-  toggleMinimize(): void {
-    this.isMinimized = !this.isMinimized;
+  // Method to load the initial multibet and update the view
+  private loadMultibet(): void {
+    this.multibetService.initMultibet().subscribe({
+      next: (response) => {
+        this.multibetService.joinMultibetGroup(response.uuid);
+        this.updateMultibetData(response);
+      },
+      error: (err) => {
+        console.error('Failed to initialize multibet', err);
+      }
+    });
+  }
+
+  // Method to update the multibet data
+  private updateMultibetData(multibet: Multibet): void {
+    this.bets = multibet.bets;
+    this.total_odds = multibet.total_odds;
+    this.total_winnings = multibet.total_winnings;
+  }
+
+  toggleVisibility(): void {
+    this.isVisible = !this.isVisible;
   }
 
   getTotalOdds(): number {
@@ -63,6 +90,10 @@ export class MultibetComponent implements OnInit {
   }
 
   deleteBet(id: number): void {
-    this.bets = this.bets.filter(bet => bet.id !== id);
+    this.multibetService.removeBetFromMultibet(id);
+  }
+
+  submitMultibet(): void {
+    this.multibetService.submitMultibet();
   }
 }

@@ -15,7 +15,7 @@
           <div class="bet-info">
             <span class="bet-subject">{{ bet.subject }}</span>
             <span class="bet-description">{{ bet.event.name }}</span>
-            <span class="bet-odds">{{ bet.odds.toFixed(2) }}</span>
+            <span class="bet-odds">{{ bet.odds | number:'1.2-2' }}</span>
           </div>
           <button (click)="deleteBet(bet.id)" class="delete-bet">
             <i class="pi pi-trash"></i>
@@ -33,8 +33,9 @@
         </div>
         <div>
           <span>Potential Winnings:</span>
-          <span class="value winning">{{ total_winnings | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="value winning">{{ getPotentialWinnings() | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
+        <button pButton (click)="submitMultibet()" class="w-full flex justify-content-center">Submit</button>
       </div>
     </div>
   </div>

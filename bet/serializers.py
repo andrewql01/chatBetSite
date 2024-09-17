@@ -126,7 +126,7 @@ class MultiBetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MultiBet
-        fields = ['uuid', 'user', 'bets', 'total_amount', 'total_odds', 'total_winnings', 'outcome', 'created_at']
+        fields = ['uuid', 'user', 'bets', 'total_amount', 'total_odds', 'total_winnings', 'outcome', 'created_at', 'state']
 
     def get_bets(self, obj):
         bet_serializer = BetPolymorphicSerializer(obj.bets.all(), many=True)
@@ -135,6 +135,7 @@ class MultiBetSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get('request')
         multi_bet, created = MultiBet.objects.get_or_create(user=request.user, state=MultiBetState.PENDING)
+        print(multi_bet.uuid)
         multi_bet.save()
         return multi_bet
 

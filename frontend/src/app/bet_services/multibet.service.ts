@@ -17,11 +17,7 @@ export class MultibetService {
 
   initMultibet() {
     const initUrl = 'http://localhost:8000/api/bets/init-multibet/';
-    return this.http.post<any>(initUrl, {}).subscribe({
-      next: (response: any) => {
-        this.joinMultibetGroup(response.uuid);
-      }
-    })
+    return this.http.post<Multibet>(initUrl, {});
   }
 
   joinMultibetGroup(multibetUuid: string): void {
@@ -32,14 +28,17 @@ export class MultibetService {
     });
   }
 
-  getMultiBetUpdates(): Observable<Multibet | null> {
+  getMultiBetUpdates(): Observable<{ action: string, multibet: Multibet | null }> {
     return this.wsService.getMessages().pipe(
-      map(data => {
-        // Check if the message type is 'multibet_update'
-        if (data?.action === 'multibet_update') {
-          return data.multibet as Multibet; // Assuming the actual Multibet object is under data.multibet
+      map((data: any) => {
+        // Check if the action contains 'multibet'
+        if (data?.action && data.action.includes('multibet')) {
+          return {
+            action: data.action,  // Pass the action type back to the frontend
+            multibet: data.multibet as Multibet
+          };
         }
-        return null; // Return null if the type is not 'multibet_update'
+        return { action: '', multibet: null };  // Return empty action and null if it doesn't match
       })
     );
   }
@@ -57,7 +56,7 @@ export class MultibetService {
   removeBetFromMultibet(betId: number): void {
     if (this.multiBetUuid) {
       this.wsService.sendMessage({
-        action: 'remove_bet_from_multibet',
+        action: 'multibet_remove_bet',
         bet_id: betId,
         multibet_uuid: this.multiBetUuid
       });
@@ -67,7 +66,7 @@ export class MultibetService {
   submitMultibet(): void {
     if (this.multiBetUuid) {
       this.wsService.sendMessage({
-        action: 'submit_multibet',
+        action: 'multibet_submit',
         multibet_uuid: this.multiBetUuid
       });
     }

@@ -44,19 +44,38 @@ class TeamSerializer(serializers.ModelSerializer):
         team, created = Team.objects.get_or_create(name=validated_data['name'], defaults=validated_data)
         return team
 
+class EventBasicSerializer(serializers.ModelSerializer):
+    """
+    A simplified Event serializer that excludes bets.
+    """
+    uuid = serializers.UUIDField(read_only=True)
+    home_team = TeamSerializer(read_only=True)
+    guest_team = TeamSerializer(read_only=True)
+    league = LeagueSerializer(read_only=True)
+
+    class Meta:
+        model = Event
+        # List all fields except 'bets'
+        fields = ['uuid', 'isLive', 'score', 'name', 'home_team', 'guest_team', 'date', 'location', 'league']
+
 class BetSerializer(serializers.ModelSerializer):
-    event = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all())
+    event = EventBasicSerializer(read_only=True)
 
     class Meta:
         model = Bet
-        fields = ['id', 'subject', 'event', 'bet_type', 'odds', 'outcome', 'created_at', 'updated_at']
+        fields = ['id', 'subject', 'event', 'bet_type', 'odds', 'outcome', 'description', 'created_at', 'updated_at']
 
-class OverUnderBetSerializer(serializers.ModelSerializer):
+    def get_description(self, obj):
+        return obj.get_description()
+
+
+
+class OverUnderBetSerializer(BetSerializer):
     class Meta(BetSerializer.Meta):
         model = OverUnderBet
-        fields = BetSerializer.Meta.fields + ['threshold', 'direction', 'subject']
+        fields = BetSerializer.Meta.fields + ['threshold', 'direction']
 
-class WinOnlyBetSerializer(serializers.ModelSerializer):
+class WinOnlyBetSerializer(BetSerializer):
     class Meta(BetSerializer.Meta):
         model = WinOnlyBet
         fields = BetSerializer.Meta.fields + ['predicted_winner']
@@ -135,7 +154,6 @@ class MultiBetSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context.get('request')
         multi_bet, created = MultiBet.objects.get_or_create(user=request.user, state=MultiBetState.PENDING)
-        print(multi_bet.uuid)
         multi_bet.save()
         return multi_bet
 

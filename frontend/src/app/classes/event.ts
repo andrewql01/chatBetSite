@@ -10,4 +10,6 @@ export interface SportEvent {
   date: string;
   location: string;
   league: League;
+  score: string;
+  isLive: boolean;
 }

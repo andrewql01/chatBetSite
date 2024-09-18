@@ -1,23 +1,30 @@
 import { Injectable } from '@angular/core';
 import { WebSocketService } from '../web_socket_services/web-socket.service';
 import { HttpClient } from '@angular/common/http';
-import {Observable} from "rxjs";
-import {Message} from "../classes/message";
-import {map} from "rxjs/operators";
-import {Multibet} from "../classes/multibet";
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { Multibet } from '../classes/multibet';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MultibetService {
+  private multibet?: Multibet;
   private multiBetUuid?: string;
+  private selectedBetIds = new Set<number>();
 
-  constructor(private wsService: WebSocketService,
-              private http: HttpClient) {}
+  constructor(private wsService: WebSocketService, private http: HttpClient) {}
 
-  initMultibet() {
+  initMultibet(): Observable<Multibet> {
     const initUrl = 'http://localhost:8000/api/bets/init-multibet/';
-    return this.http.post<Multibet>(initUrl, {});
+    return this.http.post<Multibet>(initUrl, {}).pipe(
+      map((multibet) => {
+        this.multibet = multibet;
+        this.selectedBetIds = new Set(multibet.bets.map(bet => bet.id));
+        this.joinMultibetGroup(multibet.uuid);
+        return multibet;
+      })
+    );
   }
 
   joinMultibetGroup(multibetUuid: string): void {
@@ -28,17 +35,19 @@ export class MultibetService {
     });
   }
 
-  getMultiBetUpdates(): Observable<{ action: string, multibet: Multibet | null }> {
+  getMultiBetUpdates(): Observable<{ action: string }> {
     return this.wsService.getMessages().pipe(
       map((data: any) => {
-        // Check if the action contains 'multibet'
         if (data?.action && data.action.includes('multibet')) {
+          if (data.multibet) {
+            this.multibet = data.multibet as Multibet;
+            this.selectedBetIds = new Set(this.multibet.bets.map(bet => bet.id));
+          }
           return {
-            action: data.action,  // Pass the action type back to the frontend
-            multibet: data.multibet as Multibet
+            action: data.action
           };
         }
-        return { action: '', multibet: null };  // Return empty action and null if it doesn't match
+        return { action: '' };
       })
     );
   }
@@ -70,5 +79,13 @@ export class MultibetService {
         multibet_uuid: this.multiBetUuid
       });
     }
+  }
+
+  getCurrentMultibet(): Multibet | undefined {
+    return this.multibet;
+  }
+
+  isBetSelected(betId: number): boolean {
+    return this.selectedBetIds.has(betId);
   }
 }

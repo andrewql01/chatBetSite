@@ -1,42 +1,61 @@
-<div class="multibet-container">
-  <button (click)="toggleVisibility()" class="toggle-button" [class.open]="isVisible">
-    <i class="pi" [ngClass]="{'pi-minus': !isVisible, 'pi-times': isVisible}"></i>
+<div class="compact-multibet">
+  <button
+    (click)="toggleVisibility()"
+    class="toggle-button"
+    [class.open]="isVisible"
+  >
+    <i class="pi" [ngClass]="{'pi-angle-double-left': !isVisible, 'pi-times': isVisible}"></i>
   </button>
-  <div class="multibet-box" [class.visible]="isVisible">
-    <div class="header">
-      <h3>Multibet</h3>
-      <button (click)="toggleVisibility()" class="close-button">
-        <i class="pi pi-times"></i>
-      </button>
-    </div>
-    <div class="content">
-      <ul>
-        <li *ngFor="let bet of bets" class="bet-item">
-          <div class="bet-info">
-            <span class="bet-subject">{{ bet.subject }}</span>
-            <span class="bet-description">{{ bet.event.name }}</span>
-            <span class="bet-odds">{{ bet.odds | number:'1.2-2' }}</span>
-          </div>
-          <button (click)="deleteBet(bet.id)" class="delete-bet">
-            <i class="pi pi-trash"></i>
-          </button>
-        </li>
-      </ul>
+  <div class="multibet-panel" [class.visible]="isVisible">
+    <div class="panel-content">
+      <div class="bet-list-container">
+        <ul class="bet-list">
+          <li *ngFor="let bet of bets" class="bet-item">
+            <div class="bet-info">
+              <div class="teams">{{bet.event.home_team.name}} vs {{bet.event.guest_team.name}}</div>
+              <div class="details">
+                <span class="date">{{bet.event.date | date:'dd-MM-yyyy HH:mm':'UTC'}}</span>
+                <span class="separator">|</span>
+                <span *ngIf="bet.event.isLive" class="live-indicator">LIVE</span>
+                <span class="score">{{bet.event.score}}</span>
+              </div>
+              <div class="description">{{bet.description}}</div>
+            </div>
+            <div class="bet-actions">
+              <span class="odds">{{bet.odds}}</span>
+              <button (click)="deleteBet(bet.id)" class="delete-button">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </li>
+        </ul>
+      </div>
       <div class="bet-input">
         <label for="betAmount">Bet Amount</label>
-        <input id="betAmount" type="number" [(ngModel)]="betAmount">
+        <input
+          id="betAmount"
+          type="number"
+          [(ngModel)]="betAmount"
+          placeholder="Enter amount"
+        />
       </div>
       <div class="totals">
-        <div>
+        <div class="total-item">
           <span>Total Odds:</span>
-          <span class="value">{{ total_odds | number:'1.2-2' }}</span>
+          <span class="value">{{total_odds}}</span>
         </div>
-        <div>
+        <div class="total-item">
           <span>Potential Winnings:</span>
-          <span class="value winning">{{ getPotentialWinnings() | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="value winning">{{getPotentialWinnings() | currency:'USD':'symbol':'1.2-2'}}</span>
         </div>
-        <button pButton (click)="submitMultibet()" class="w-full flex justify-content-center">Submit</button>
       </div>
     </div>
+    <button
+      (click)="submitMultibet()"
+      [disabled]="isReadyToSubmit()"
+      class="submit-button"
+    >
+      Submit Multibet
+    </button>
   </div>
 </div>

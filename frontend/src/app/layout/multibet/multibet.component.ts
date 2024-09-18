@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from "@angular/common";
-import { ImportsModule } from "../../imports";
-import { BetService } from "../../bet_services/bet.service";
-import { MultibetService } from "../../bet_services/multibet.service";
-import { Subscription } from "rxjs";
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { ImportsModule } from '../../imports';
+import { BetService } from '../../bet_services/bet.service';
+import { MultibetService } from '../../bet_services/multibet.service';
+import { Subscription } from 'rxjs';
 import { Bet } from '../../classes/bet';
-import { Multibet } from "../../classes/multibet";
+import {Multibet} from "../../classes/multibet";
 
 @Component({
   selector: 'app-multibet',
@@ -16,7 +16,7 @@ import { Multibet } from "../../classes/multibet";
     ImportsModule
   ],
   templateUrl: './multibet.component.html',
-  styleUrls: ['./multibet.component.css']  // Fixed: styleUrl -> styleUrls
+  styleUrls: ['./multibet.component.css']
 })
 export class MultibetComponent implements OnInit, OnDestroy {
   protected isVisible = false;
@@ -25,26 +25,22 @@ export class MultibetComponent implements OnInit, OnDestroy {
   protected bets: Bet[] = [];
   protected total_odds: number = 0;
   protected total_winnings: number = 0;
-  protected multibet: Multibet | null = null;
   private multibetSub: Subscription = new Subscription();
 
-  constructor(private betService: BetService,
-              private multibetService: MultibetService) {}
+  constructor(private betService: BetService, private multibetService: MultibetService) {}
 
   ngOnInit(): void {
-    // Initialize multibet
     this.loadMultibet();
 
-    // Subscribe to WebSocket updates
     this.multibetSub = this.multibetService.getMultiBetUpdates().subscribe({
       next: (response) => {
-        if (response.action === 'multibet_update' && response.multibet) {
-          this.updateMultibetData(response.multibet);
-        }
-        else if (response.action === 'multibet_submit') {
-          // @ts-ignore
-          console.log(response.multibet.state)
-          this.loadMultibet();  // Reuse the method here
+        if (response.action === 'multibet_update') {
+          const currentMultibet = this.multibetService.getCurrentMultibet();
+          if (currentMultibet) {
+            this.updateMultibetData(currentMultibet);
+          }
+        } else if (response.action === 'multibet_submit') {
+          this.loadMultibet();
         }
       },
       error: (err) => {
@@ -57,11 +53,9 @@ export class MultibetComponent implements OnInit, OnDestroy {
     this.multibetSub.unsubscribe();
   }
 
-  // Method to load the initial multibet and update the view
   private loadMultibet(): void {
     this.multibetService.initMultibet().subscribe({
       next: (response) => {
-        this.multibetService.joinMultibetGroup(response.uuid);
         this.updateMultibetData(response);
       },
       error: (err) => {
@@ -70,7 +64,6 @@ export class MultibetComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Method to update the multibet data
   private updateMultibetData(multibet: Multibet): void {
     this.bets = multibet.bets;
     this.total_odds = multibet.total_odds;
@@ -81,12 +74,8 @@ export class MultibetComponent implements OnInit, OnDestroy {
     this.isVisible = !this.isVisible;
   }
 
-  getTotalOdds(): number {
-    return this.bets.reduce((total, bet) => total * bet.odds, 1);
-  }
-
   getPotentialWinnings(): number {
-    return this.betAmount * this.getTotalOdds();
+    return this.betAmount * this.total_odds;
   }
 
   deleteBet(id: number): void {
@@ -95,5 +84,9 @@ export class MultibetComponent implements OnInit, OnDestroy {
 
   submitMultibet(): void {
     this.multibetService.submitMultibet();
+  }
+
+  isReadyToSubmit(): boolean {
+    return !(this.betAmount > 0 && this.bets.length > 0);
   }
 }

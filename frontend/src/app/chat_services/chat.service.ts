@@ -1,70 +1,90 @@
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { WebSocketService } from '../web_socket_services/web-socket.service';
-import { Message } from '../classes/message';
 import { User } from '../classes/user';
-import {catchError, Observable, throwError} from 'rxjs';
-import { map } from 'rxjs/operators';
-import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
+import { Message } from '../classes/message';
+import { WebSocketService } from '../web_socket_services/web-socket.service';
+import { HttpClient } from '@angular/common/http';
+import { UserService } from '../user_services/user.service';
 
 @Injectable({
   providedIn: 'root'
 })
-
 export class ChatService {
-  private roomUuid?: string;
+  private activeRooms: Set<string> = new Set(); // Track all active rooms
+  private typingStatusSubjects: Map<string, BehaviorSubject<{ user: User, typing: boolean }>> = new Map();
+  private messagesSubjects: Map<string, BehaviorSubject<Message[]>> = new Map(); // Track messages for each room
+  currentUserId!: number;
 
-  constructor(private wsService: WebSocketService,
-              private http: HttpClient,) {}
+  constructor(
+    private wsService: WebSocketService,
+    private http: HttpClient,
+    private userService: UserService
+  ) {
+    this.userService.getUser().subscribe(value => {
+      this.currentUserId = value.id;
+    });
+
+    this.wsService.getMessages().subscribe(data => {
+      if (data?.action === 'chat_message' && data?.room_uuid) {
+        this.handleIncomingMessage(data.room_uuid, data.message);
+      }
+      if (data?.action === 'user_typing' && data?.room_uuid) {
+        this.handleTypingStatus(data.room_uuid, data.user, data.typing);
+      }
+    });
+  }
 
   joinChat(roomUuid: string): void {
-    this.roomUuid = roomUuid;
+    this.activeRooms.add(roomUuid); // Add room to active rooms
     this.wsService.sendMessage({ action: 'join_chat', room_uuid: roomUuid });
-  }
 
-  leaveChat(oldRoomId: string | null): void {
-    this.wsService.sendMessage({
-      action: 'leave_chat',
-      room_uuid: oldRoomId,
-    })
-  }
+    // Initialize message tracking for the room
+    if (!this.messagesSubjects.has(roomUuid)) {
+      this.messagesSubjects.set(roomUuid, new BehaviorSubject<Message[]>([]));
+    }
 
-  sendMessage(message: any): void {
-    if (this.roomUuid) {
-      this.wsService.sendMessage({ action: 'chat_message', message: message, room_uuid: this.roomUuid });
+    // Initialize typing status tracking for the room
+    if (!this.typingStatusSubjects.has(roomUuid)) {
+      this.typingStatusSubjects.set(roomUuid, new BehaviorSubject<{ user: User, typing: boolean }>({ user: { id: -1, username: '' }, typing: false }));
     }
   }
 
-  sendTypingStatus(isTyping: boolean): void {
-    if (this.roomUuid) {
-      this.wsService.sendMessage({ action: 'user_typing', typing: isTyping, room_uuid: this.roomUuid });
+  leaveChat(roomUuid: string): void {
+    this.activeRooms.delete(roomUuid); // Remove room from active rooms
+    this.wsService.sendMessage({ action: 'leave_chat', room_uuid: roomUuid });
+    this.messagesSubjects.delete(roomUuid); // Clean up messages for the room
+    this.typingStatusSubjects.delete(roomUuid); // Clean up typing status for the room
+  }
+
+  sendMessage(roomUuid: string, message: string): void {
+    this.wsService.sendMessage({ action: 'chat_message', message: message, room_uuid: roomUuid });
+  }
+
+  sendTypingStatus(roomUuid: string, isTyping: boolean): void {
+    this.wsService.sendMessage({ action: 'user_typing', typing: isTyping, room_uuid: roomUuid });
+  }
+
+  getMessagesForRoom(roomUuid: string): Observable<Message[]> {
+    return this.messagesSubjects.get(roomUuid)?.asObservable() ?? new Observable<Message[]>(observer => observer.complete());
+  }
+
+  getTypingStatus(roomUuid: string): Observable<{ user: User, typing: boolean }> {
+    return this.typingStatusSubjects.get(roomUuid)?.asObservable() ?? new Observable<{ user: User, typing: boolean }>(observer => observer.complete());
+  }
+
+  private handleIncomingMessage(roomUuid: string, message: Message): void {
+    const subject = this.messagesSubjects.get(roomUuid);
+    if (subject) {
+      const messages = subject.value;
+      messages.push(message); // Add new message to the history
+      subject.next(messages); // Emit the updated message list
     }
   }
 
-  getMessages(): Observable<Message> {
-    return this.wsService.getMessages().pipe(
-      map(data => data?.message ?? null)
-    );
-  }
-
-  getTypingStatus(): Observable<{ user: User, typing: boolean }> {
-    return this.wsService.getMessages().pipe(
-      map(data => {
-        return data;
-    })
-
-    );
-  }
-
-  fetchInitialMessages(roomUuid: string): Observable<Message[]> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const params = new HttpParams().set('chat_uuid', roomUuid);
-    return this.http.get(`http://127.0.0.1:8000/api/chats/messages/`, { params, headers })
-      .pipe(
-      map(response => response as Message[]), // Assert the type here
-      catchError(error => {
-        console.error('Error response:', error);
-        return throwError(error);
-      })
-    );
+  private handleTypingStatus(roomUuid: string, user: User, typing: boolean): void {
+    const subject = this.typingStatusSubjects.get(roomUuid);
+    if (subject) {
+      subject.next({ user, typing });
+    }
   }
 }

@@ -1,0 +1,5 @@
+<div *ngFor="let roomId of activeChats | keyvalue">
+  <div *ngIf="isChatActive(roomId.key)">
+    <app-chat [roomId]="roomId.key"></app-chat> <!-- Dynamically render chats -->
+  </div>
+</div>

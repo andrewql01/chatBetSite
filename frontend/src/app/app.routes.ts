@@ -14,7 +14,6 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'main', component: MainComponent, canActivate: [AuthorizeGuard], children: [
       { path: '', component: DashboardComponent },  // Default child route
-      { path: 'chat/:roomId', component: ChatComponent },  // Chat rooms
       { path: 'dashboard', component: DashboardComponent },  // Explicit dashboard route
     ],},
   { path: '**', redirectTo: '', pathMatch: 'full' },  // Wildcard route for a 404 page

@@ -10,7 +10,7 @@
     <div class="flex align-items-center">
       <p-buttonGroup class="no-border-button-group">
         <p-button icon="pi pi-angle-down" [outlined]="true" ></p-button>
-        <p-button icon="pi pi-times" severity="danger" [outlined]="true" class="border-none"></p-button>
+        <p-button icon="pi pi-times" severity="danger" [outlined]="true" class="border-none" (onClick)="closeChat(roomId)"></p-button>
       </p-buttonGroup>
     </div>
 </div>
@@ -46,4 +46,4 @@
         </span>
       </div>
 </p-panel>
-<app-bet-container></app-bet-container>
+

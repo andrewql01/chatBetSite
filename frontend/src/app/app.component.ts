@@ -9,6 +9,7 @@ import {LoginComponent} from "./layout/login/login.component";
 import {RegisterComponent} from "./layout/register/register.component";
 import {WelcomeComponent} from "./layout/welcome/welcome.component";
 import {WebSocketService} from "./web_socket_services/web-socket.service";
+import {ChatManagerComponent} from "./layout/chat-manager/chat-manager.component";
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,7 @@ import {WebSocketService} from "./web_socket_services/web-socket.service";
     LoginComponent,
     RegisterComponent,
     WelcomeComponent,
+    ChatManagerComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',

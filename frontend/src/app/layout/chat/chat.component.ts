@@ -1,122 +1,53 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ChatService } from '../../chat_services/chat.service';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Message } from '../../classes/message';
-import { User } from '../../classes/user';
-import {map, Subscription} from 'rxjs';
-import { UserService } from '../../user_services/user.service';
-import {ImportsModule} from "../../imports";
-import {ButtonGroupModule} from "primeng/buttongroup";
-import {BetContainerComponent} from "../bet-container/bet-container.component";
-import {MultibetComponent} from "../multibet/multibet.component";
+import { Subscription } from 'rxjs';
+import { ChatService } from '../../chat_services/chat.service';
+import { ImportsModule } from '../../imports';
+import { ButtonGroupModule } from 'primeng/buttongroup';
+import {ChatCommunicationService} from "../../chat_services/chat-communication.service";
 
 @Component({
   selector: 'app-chat',
-  standalone: true,
-  imports: [ImportsModule, ButtonGroupModule, BetContainerComponent, MultibetComponent],
   templateUrl: './chat.component.html',
+  standalone: true,
+  imports: [ImportsModule, ButtonGroupModule],
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent implements OnInit, OnDestroy {
-  @ViewChild('messagesContainer', { static: false }) private messagesContainer!: ElementRef;
-  messages: (Message & { isCurrentUser: boolean })[] = [];
-  roomId: string = '';
-  private routeSub: Subscription = new Subscription();
-  private chatSub: Subscription = new Subscription();
-  private userSub: Subscription = new Subscription();
-  private typingStatusSub: Subscription = new Subscription();
-  protected currentUserId!: number;
-  newMessage: string = '';
+  @Input() roomId!: string;
+  messages: Message[] = [];
   isTyping: boolean = false;
-  private typingTimeout: any;
-  typingUser: User | null = null;
   otherUserTyping: boolean = false;
-  private oldRoomId: string | null = null;
+  newMessage: string = '';
 
-  constructor(
-    private route: ActivatedRoute,
-    private chatService: ChatService,
-    private userService: UserService
-  ) {}
+  private chatSub: Subscription = new Subscription();
+  private typingStatusSub: Subscription = new Subscription();
+  private typingTimeout: any;
+
+  constructor(private chatService: ChatService,
+              private communicationService: ChatCommunicationService) { }
 
   ngOnInit(): void {
-    this.userSub = this.userService.getUser().subscribe({
-      next: (response) => {
-        this.currentUserId = response.id;
-        this.initializeChat();
-      },
-      error: (err) => console.error('Error fetching user ID:', err)
+    this.chatService.joinChat(this.roomId);
+
+    // Subscribe to message updates
+    this.chatSub = this.chatService.getMessagesForRoom(this.roomId).subscribe(messages => {
+      this.messages = messages; // Replace with the updated list of messages
+      this.scrollToBottom();
     });
 
-    this.routeSub = this.route.paramMap.subscribe(params => {
-      const newRoomId = params.get('roomId')!;
-      if (this.roomId){
-        this.oldRoomId = this.roomId;
-      }
-      if (this.roomId !== newRoomId) {
-        this.roomId = newRoomId;
-        if (this.currentUserId) {
-          this.initializeChat();
-        }
-      }
-    });
-  }
-
-  initializeChat(): void {
-    if (!this.currentUserId) {
-      console.error('Current user ID is not set');
-      return;
-    }
-
-    this.onSwitchChat();
-
-    this.chatService.leaveChat(this.oldRoomId);
-
-    this.chatService.fetchInitialMessages(this.roomId).subscribe({
-      next: (messages) => {
-        this.messages = messages.map(message => ({
-          ...message,
-          isCurrentUser: message.user.id === this.currentUserId
-        }));
-        this.scrollToBottom();
-      },
-      error: (err) => console.error('Error fetching initial messages:', err)
-    });
-
-    this.chatService.joinChat(this.roomId)
-
-    this.chatSub = this.chatService.getMessages().subscribe(message => {
-      if (message && (message.text ?? '').trim().length > 0) {
-        const processedMessage = {
-          ...message,
-          isCurrentUser: message.user.id === this.currentUserId
-        };
-        this.messages.push(processedMessage);
-        this.scrollToBottom();
-      }
-    });
-
-    this.typingStatusSub = this.chatService.getTypingStatus().subscribe({
-      next: message => {
-        if (message.typing) {
-          this.typingUser = message.user;
-          this.otherUserTyping = this.typingUser.id !== this.currentUserId;
-        }
-
-        else{
-          this.otherUserTyping = false;
-          this.typingUser = null;
-        }
-      }
+    // Subscribe to typing status updates
+    this.typingStatusSub = this.chatService.getTypingStatus(this.roomId).subscribe(status => {
+      this.otherUserTyping = status.typing && status.user.id !== this.chatService.currentUserId;
     });
   }
 
   onSendMessage(messageText: string): void {
     if (messageText.trim()) {
-      this.chatService.sendMessage(messageText);
-      this.newMessage = '';
+      this.chatService.sendMessage(this.roomId, messageText);
       this.isTyping = false;
-      this.chatService.sendTypingStatus(false);
+      this.chatService.sendTypingStatus(this.roomId, false);
+      this.newMessage = '';
     }
   }
 
@@ -125,43 +56,35 @@ export class ChatComponent implements OnInit, OnDestroy {
       clearTimeout(this.typingTimeout);
     }
     this.isTyping = true;
-    this.chatService.sendTypingStatus(true);
+    this.chatService.sendTypingStatus(this.roomId, true);
 
-    // Debounce typing status
     this.typingTimeout = setTimeout(() => {
       this.isTyping = false;
-      this.chatService.sendTypingStatus(false);
-    }, 1000); // Adjust debounce time as needed
+      this.chatService.sendTypingStatus(this.roomId, false);
+    }, 1000);
   }
 
   scrollToBottom(): void {
     try {
-      this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
+      const container = document.getElementById('messageContainer');
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
     } catch (err) {
       console.error('Error scrolling to bottom:', err);
     }
   }
 
-  ngAfterViewChecked(): void {
-    this.scrollToBottom(); // Ensure we scroll to bottom after every view update
-  }
-
-  disconnect(): void {
-    if (this.typingUser?.id == this.currentUserId) {
-      this.chatService.sendTypingStatus(false);
-    }
-    this.chatService.leaveChat(this.oldRoomId);
-  }
-
   ngOnDestroy(): void {
-    this.routeSub.unsubscribe();
     this.chatSub.unsubscribe();
-    this.userSub.unsubscribe();
     this.typingStatusSub.unsubscribe();
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+    this.chatService.leaveChat(this.roomId);
   }
 
-  onSwitchChat(): void {
-    this.chatSub.unsubscribe();
-    this.typingStatusSub.unsubscribe();
+  closeChat(roomId: string) {
+    this.communicationService.requestCloseChat(roomId);
   }
 }

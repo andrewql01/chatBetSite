@@ -5,6 +5,8 @@ import polymorphic
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from polymorphic.models import PolymorphicModel
 
 from accounts.models import UserData
@@ -31,6 +33,7 @@ class BetOutcomes(models.TextChoices):
     LOSE = 'LOSE', 'Lose'
     REFUND = 'REFUND', 'Refund'
     IN_PROGRESS = 'IN_PROG', 'In Progress'
+    ON_HOLD = 'ON_HOLD', 'On Hold'
 
 class MultiBetState(models.TextChoices):
     SUBMITTED = 'Submitted', 'Submitted'
@@ -75,6 +78,8 @@ class Team(models.Model):
 class Event(models.Model):
     id = models.AutoField(primary_key=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    isLive = models.BooleanField(default=False)
+    score = models.TextField(blank=True, null=True, default='0:0')
     name = models.CharField(max_length=255, blank=True, null=True)
     home_team = models.ForeignKey(Team, related_name='home_team_events', on_delete=models.CASCADE)
     guest_team = models.ForeignKey(Team, related_name='guest_team_events', on_delete=models.CASCADE)
@@ -95,6 +100,9 @@ class Bet(PolymorphicModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def description(self):
+        return f"{self.subject}: {self.event}"
 
     def save(self, *args, **kwargs):
         if self.outcome == BetOutcomes.REFUND:
@@ -114,12 +122,20 @@ class OverUnderBet(Bet):
             self.bet_type = BetTypes.OVER_UNDER
         super().save(*args, **kwargs)
 
+    @property
+    def description(self):
+        return f"{self.subject}: {self.direction} {self.threshold}"
+
     def __str__(self):
         return f'Over/Under Bet {self.id} on {self.event.name} - {self.direction} {self.threshold}'
 
 class WinOnlyBet(Bet):
     bet_type = BetTypes.WIN_ONLY
     predicted_winner = models.IntegerField(choices=WinOnlyOutcomes.choices, blank=True, null=True)
+
+    @property
+    def description(self):
+        return f"{self.subject}: {self.predicted_winner}"
 
     def __str__(self):
         outcome = dict(WinOnlyOutcomes.choices).get(self.predicted_winner, "Unknown")
@@ -187,4 +203,3 @@ class MultiBet(models.Model):
         else:
             self.calculate_totals()  # Calculate totals before saving
             super().save(*args, **kwargs)
-

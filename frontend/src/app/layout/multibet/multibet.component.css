@@ -4,193 +4,237 @@
   --background-color: #1a1a2e;
   --text-color: #ffffff;
   --border-color: rgba(255, 255, 255, 0.1);
+  --panel-width: 300px;
+  --toggle-size: 40px;
 }
 
-.multibet-container {
+.compact-multibet {
   position: fixed;
-  bottom: 0;
-  right: 20px;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
   z-index: 1000;
 }
 
 .toggle-button {
   position: absolute;
-  bottom: 0;
+  top: 50%;
   right: 0;
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
+  transform: translateY(-50%);
+  width: var(--toggle-size);
+  height: var(--toggle-size);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: var(--text-color);
   border: none;
-  border-radius: 25px 25px 0 0;
+  border-radius: 50% 0 0 50%;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+
+  &.open {
+    right: var(--panel-width);
+  }
 }
 
-.toggle-button.open {
-  border-radius: 50%;
-  transform: translateY(-10px);
-}
-
-.multibet-box {
+.multibet-panel {
   position: absolute;
-  bottom: 60px;
-  right: 0;
-  width: 300px;
-  background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
+  top: 50%;
+  right: calc(-1 * var(--panel-width));
+  transform: translateY(-50%);
+  width: var(--panel-width);
+  height: 80vh;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
+  backdrop-filter: blur(10px);
   color: var(--text-color);
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  border-radius: 10px 0 0 10px;
   overflow: hidden;
   transition: all 0.3s ease;
-  opacity: 0;
-  transform: translateY(100%);
-  pointer-events: none;
-}
-
-.multibet-box.visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.multibet-box::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
-  z-index: -1;
-  filter: blur(10px);
-  opacity: 1;
-  border-radius: 12px;
-}
-
-.header {
-  background-color: rgba(0, 0, 0, 0.3);
-  padding: 15px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+
+  &.visible {
+    right: 0;
+  }
 }
 
-.header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: var(--primary-color);
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
-.close-button {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: color 0.3s ease;
+.bet-list-container {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
 }
 
-.close-button:hover {
-  color: var(--secondary-color);
-}
-
-.content {
-  padding: 15px;
-}
-
-ul {
+.bet-list {
   list-style-type: none;
   padding: 0;
-  margin: 0 0 15px 0;
+  margin: 0;
 }
 
 .bet-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  padding: 8px;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  padding: 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  background-color: rgba(255, 255, 255, 0.05);
+  font-size: 0.9rem;
 }
 
 .bet-info {
-  display: flex;
-  flex-direction: column;
+  flex: 1;
 }
 
-.bet-subject {
-  font-size: 0.8rem;
-  color: var(--secondary-color);
-}
-
-.bet-description {
-  font-size: 1rem;
-}
-
-.bet-odds {
-  font-size: 1.1rem;
+.teams {
   font-weight: bold;
-  color: var(--primary-color);
+  margin-bottom: 2px;
 }
 
-.delete-bet {
+.details {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.separator {
+  margin: 0 4px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.live-indicator {
+  background: #e74c3c;
+  color: white;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+}
+
+.score {
+  font-weight: bold;
+}
+
+.description {
+  font-size: 0.8rem;
+}
+
+.bet-actions {
+  display: flex;
+  align-items: center;
+}
+
+.odds {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--secondary-color);
+  margin-right: 5px;
+}
+
+.delete-button {
   background: none;
   border: none;
   color: var(--text-color);
   cursor: pointer;
   transition: color 0.3s ease;
-}
+  font-size: 0.8rem;
 
-.delete-bet:hover {
-  color: #e74c3c;
+  &:hover {
+    color: #e74c3c;
+  }
 }
 
 .bet-input {
-  margin-bottom: 15px;
-}
+  margin-bottom: 10px;
 
-.bet-input label {
-  display: block;
-  margin-bottom: 5px;
-}
+  label {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.9rem;
+  }
 
-.bet-input input {
-  width: 100%;
-  padding: 8px;
-  background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
-  border: 1px solid var(--border-color);
-  color: var(--text-color);
-  border-radius: 5px;
+  input {
+    width: 100%;
+    padding: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 3px;
+    font-size: 0.9rem;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+  }
 }
 
 .totals {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.totals > div {
+.total-item {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+
+  .value {
+    font-weight: bold;
+  }
+
+  .winning {
+    color: var(--secondary-color);
+  }
 }
 
-.value {
-  color: var(--primary-color);
+.submit-button {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: var(--text-color);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
-.winning {
-  color: var(--secondary-color);
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-.multibet-box {
-  animation: pulse 2s infinite;
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
 }

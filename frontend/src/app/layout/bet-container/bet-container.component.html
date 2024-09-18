@@ -1,31 +1,31 @@
-<div *ngFor="let event of events" class="flex flex-row flex-wrap col-6 p-0 mb-2">
-  <!-- Event Teams Section -->
-  <p-card class="col-12 p-0">
-    <div class="flex flex-row col-12 p-0">
-      <div class="col-5 flex flex-column align-items-center justify-content-center p-0">
-        <p-avatar class="col-12 flex justify-content-center"></p-avatar>
-        <p class="text-center m-0">{{ event.home_team.name }}</p>
+<div class="futuristic-sexy-bet-container">
+  <div *ngFor="let event of events" class="event-card">
+    <div class="event-header border-round-top flex flex-row flex-wrap justify-content-center align-items-center">
+      <div class="event-info p-0 justify-content-center align-items-center col-12 pt-1">
+        <span class="event-status" [class.live]="event.isLive">
+          {{ event.date | date: 'dd-MM-yyyy HH:mm' : 'UTC' }}
+        </span>
+        <span class="event-score" *ngIf="event.isLive">{{ event.score }}</span>
       </div>
-      <p-divider layout="vertical" class="col-2 m-0"></p-divider>
-      <div class="col-5 flex flex-column align-items-center justify-content-center p-0">
-        <p-avatar class="col-12 flex justify-content-center"></p-avatar>
-        <p class="text-center m-0">{{ event.guest_team.name }}</p>
+      <div class="teams-info p-0 flex justify-content-between col-12">
+        <span class="team-name col-5 text-center">{{ event.home_team.name }}</span>
+        <span class="vs col-2 text-center">VS</span>
+        <span class="team-name col-5 text-center">{{ event.guest_team.name }}</span>
       </div>
     </div>
-    <p-divider layout="horizontal" class="m-0"></p-divider>
-    <!-- Bets Section -->
-    <div class="flex flex-row flex-wrap p-0 m-0">
-      <ng-container *ngFor="let bet of event.grouped_bets.WinOnlyBet.subjects.WINNING_TEAM">
-        <div class="col-4 text-center p-0 m-0">
-          <p class="m-0">{{ bet.predicted_winner }}</p>
-          <p-button label="{{ bet.odds }}"
-                    severity="secondary"
-                    class="w-full m-0 p-0"
-                    styleClass="p-button-sm"
-                    (click)="addBetToMultibet(bet.id)">
+    <div class="bets-container">
+        <div *ngFor="let bet of event.grouped_bets.WinOnlyBet.subjects.WINNING_TEAM"
+        class="col-4">
+          <p-button
+            [styleClass] = "isBetSelected(bet.id) ? 'p-button-info' : 'p-button-secondary'"
+            class="col-12 m-0 justify-content-center p-0"
+            (click)="toggleBetInMultibet(bet.id)"
+          >
+            <span class="bet-winner m-0 p-0 text-center text-primary-50">{{ bet.predicted_winner }}</span>
+            <span class="bet-odds">{{ bet.odds }}</span>
           </p-button>
         </div>
-      </ng-container>
     </div>
-  </p-card>
+
+  </div>
 </div>

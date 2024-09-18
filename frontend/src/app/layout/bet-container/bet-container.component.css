@@ -1,0 +1,116 @@
+.futuristic-sexy-bet-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: space-between;
+}
+
+.event-card {
+  background-color: #292929;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 300px; /* Reduced size for a more compact layout */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.event-header {
+  background: #202020;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  border-bottom: 1px solid #333;
+}
+
+.event-info {
+  text-align: center;
+  font-size: 12px; /* Smaller font size */
+  color: #fff;
+}
+
+.event-status {
+  color: #999;
+}
+
+.event-status.live {
+  color: #f00;
+}
+
+.event-score {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.teams-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px; /* Reduced font size */
+  color: #ccc;
+}
+
+.team-name {
+  font-size: 14px; /* Reduced font size */
+  font-weight: bold;
+}
+
+.vs {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ccc;
+}
+
+.bets-container {
+  display: flex;
+  justify-content: space-around;
+  background: #1c1c1c;
+}
+
+.bet-button {
+  background-color: #1e1e1e;
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12px; /* Smaller font */
+  cursor: pointer;
+  min-width: 80px; /* Adjust button size */
+}
+
+.bet-button:hover {
+  background-color: #343434;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.bet-button.selected {
+  border-color: #00f;
+  background-color: #2e2e2e;
+}
+
+.bet-winner {
+  font-weight: bold;
+  font-size: 10px; /* Reduced font size */
+}
+
+.bet-odds {
+  font-size: 12px;
+  color: #ccc;
+}
+
+:host ::ng-deep .p-button {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+:host ::ng-deep .p-button-info{
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.5), rgba(46, 204, 113, 0.1));
+  border: none;
+}
+:host ::ng-deep .p-button-secondary{
+  border: none;
+}
+

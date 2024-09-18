@@ -33,7 +33,6 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get('action')
-
         # Route the message to the appropriate handler
         if action == 'join_chat':
             await self.handle_join_chat(data)
@@ -186,10 +185,18 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
         return Message.objects.create(user=user, chat=chat, text=message)
 
     @database_sync_to_async
-    def add_bet_to_multibet(self, multibet_uuid, bet_id):
+    def add_bet_to_multibet(self, multibet_uuid, new_bet_id):
         multibet = MultiBet.objects.get(uuid=multibet_uuid)
-        bet = Bet.objects.get(id=bet_id)
-        multibet.bets.add(bet)
+        new_bet = Bet.objects.get(id=new_bet_id)
+
+        # Remove existing bet with the same subject and event
+        for bet in multibet.bets.all():
+            if bet.subject == new_bet.subject and bet.event == new_bet.event:
+                multibet.bets.remove(bet)
+                break
+
+        # Add the new bet
+        multibet.bets.add(new_bet)
         multibet.save()
         return multibet
 

@@ -32,11 +32,44 @@ class MessageViewSet(ListAPIView):
     serializer_class = MessageSerializer
 
     def get_queryset(self):
-        chat_id = self.request.query_params.get('chat_uuid')
+        chat_uuid = self.request.query_params.get('chat_uuid')
 
-        if chat_id:
-            return Message.objects.filter(chat__uuid=chat_id).order_by('created_at')
+        if chat_uuid:
+            return Message.objects.filter(chat__uuid=chat_uuid).order_by('-created_at')[:10]
         return Message.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+class OlderMessageViewSet(ListAPIView):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        chat_uuid = self.request.query_params.get('chat_uuid')
+        before_message_id = self.request.query_params.get('before_message_id')
+
+        if chat_uuid and before_message_id:
+            try:
+                before_message_id = int(before_message_id)
+            except ValueError:
+                return Message.objects.none()  # Return empty queryset if before_message_id is not a valid integer
+
+            try:
+                chat = Chat.objects.get(uuid=chat_uuid)
+            except Chat.DoesNotExist:
+                return Message.objects.none()  # Return empty queryset if chat with given UUID does not exist
+
+            # Filter messages based on chat and before_message_id
+            queryset = Message.objects.filter(
+                chat=chat,  # Use the chat instance instead of chat_uuid
+                id__lt=before_message_id
+            ).order_by('-created_at')[:10]  # Ensure that messages are ordered by creation time
+
+            return queryset
+        else:
+            return Message.objects.none()  # Return an empty queryset if parameters are not provided
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

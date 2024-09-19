@@ -1,5 +1,7 @@
-<div *ngFor="let roomId of activeChats | keyvalue">
-  <div *ngIf="isChatActive(roomId.key)">
-    <app-chat [roomId]="roomId.key"></app-chat> <!-- Dynamically render chats -->
+<div class="chat-container">
+  <div *ngFor="let roomId of activeChats | keyvalue; trackBy: trackByRoomId"  class="chat-item">
+    <div *ngIf="isChatActive(roomId.key)">
+      <app-chat [roomId]="roomId.key"></app-chat>
+    </div>
   </div>
 </div>

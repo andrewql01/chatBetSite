@@ -3,6 +3,7 @@ import { ChatCommunicationService } from '../../chat_services/chat-communication
 import { ChatService } from '../../chat_services/chat.service';
 import {KeyValuePipe, NgForOf, NgIf} from "@angular/common";
 import {ChatComponent} from "../chat/chat.component";
+import {Chat} from "../../classes/chat";
 
 @Component({
   selector: 'app-chat-manager',
@@ -51,4 +52,7 @@ export class ChatManagerComponent implements OnInit {
     return this.activeChats.get(roomId) ?? false;
   }
 
+  trackByRoomId(index: number, roomId: any): string {
+    return roomId.key; // Use the room's unique ID (roomId.key) to track
+  }
 }

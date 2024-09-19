@@ -2,7 +2,8 @@ import {User} from "./user";
 import {Chat} from "./chat";
 
 export interface Message {
-  isCurrentUser: boolean;
+  isCurrentUser?: boolean;
+  id: number;
   chat: Chat;
   user: User;
   text: string;

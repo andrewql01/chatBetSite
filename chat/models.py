@@ -22,7 +22,7 @@ class Message(models.Model):
     id = models.AutoField(primary_key=True)
     parent_message = models.ForeignKey('self', null=True, blank=True,
                                        on_delete=models.SET(set_deleted_message))
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, related_name='messages', on_delete=models.CASCADE)
     user = models.ForeignKey(UserData, on_delete=models.CASCADE, related_name='messages')
     text = models.TextField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)

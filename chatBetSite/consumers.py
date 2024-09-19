@@ -31,6 +31,7 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
         self.current_room = None    # Clear the current room tracking
 
     async def receive(self, text_data):
+
         data = json.loads(text_data)
         action = data.get('action')
         # Route the message to the appropriate handler
@@ -88,6 +89,7 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'chat_message',
                     'message': await self.serialize_message(saved_message),
+                    'room_uuid': room_uuid
                 }
             )
 
@@ -104,6 +106,7 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
                     'type': 'user_typing',
                     'user': await self.serialize_user(self.user),
                     'typing': typing,
+                    'room_uuid': room_uuid,
                 }
             )
 
@@ -240,10 +243,10 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
 
     # Event Handlers for Sending Messages Back
     async def chat_message(self, event):
-        await self.send(text_data=json.dumps({'action': 'chat_message', 'message': event['message']}))
+        await self.send(text_data=json.dumps({'action': 'chat_message', 'message': event['message'], 'room_uuid': event['room_uuid']}))
 
     async def user_typing(self, event):
-        await self.send(text_data=json.dumps({'action': 'user_typing', 'user': event['user'], 'typing': event['typing']}))
+        await self.send(text_data=json.dumps({'action': 'user_typing', 'user': event['user'], 'typing': event['typing'], 'room_uuid': event['room_uuid']}))
 
     async def multibet_update(self, event):
         await self.send(text_data=json.dumps({'action': 'multibet_update', 'multibet': event['multibet']}))

@@ -18,10 +18,15 @@ class ChatSerializer(serializers.ModelSerializer):
         chat.save()
         return chat
 
+class ChatUuidSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Chat
+        fields = ['id', 'uuid']
+
 class MessageSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)  # Include the user who sent the message
-    chat = serializers.PrimaryKeyRelatedField(queryset=Chat.objects.all()) # can be done with nested serializer
+    chat = ChatUuidSerializer(read_only=True)
 
     class Meta:
         model = Message
-        fields = ['parent_message', 'chat', 'user', 'text']
+        fields = ['id', 'parent_message', 'chat', 'user', 'text']

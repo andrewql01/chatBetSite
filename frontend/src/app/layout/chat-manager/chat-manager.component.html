@@ -1,5 +1,5 @@
-<div class="chat-container">
-  <div *ngFor="let roomId of activeChats | keyvalue; trackBy: trackByRoomId"  class="chat-item">
+<div class="chat-container flex flex-row-reverse justify-content-start">
+  <div *ngFor="let roomId of activeChats | keyvalue; trackBy: trackByRoomId" class="chat-item">
     <div *ngIf="isChatActive(roomId.key)">
       <app-chat [roomId]="roomId.key"></app-chat>
     </div>

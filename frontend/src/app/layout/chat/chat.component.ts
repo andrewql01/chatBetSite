@@ -28,6 +28,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private typingTimeout: any;
 
   @ViewChild('messagesContainer', { static: false }) messagesContainer!: ElementRef;
+  @ViewChild('skeleton', { static: false }) skeletonElement!: ElementRef;
 
   constructor(private chatService: ChatService,
               private communicationService: ChatCommunicationService,
@@ -92,7 +93,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
     setTimeout(() => {
       try {
-        const container = document.getElementById('messagesContainer' + this.roomId);
+        const container = this.messagesContainer.nativeElement;
         if (container) {
           container.scrollTop = container.scrollHeight;
         }
@@ -103,12 +104,11 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   onScroll(): void {
-    const container = document.getElementById('messagesContainer' + this.roomId);
+    const container = this.messagesContainer.nativeElement;
     if (container && container.scrollTop === 0 && !this.loadingMoreMessages) {
       this.loadMoreMessages();
     }
   }
-
 
   ngOnDestroy(): void {
     this.chatSub.unsubscribe();
@@ -131,12 +131,26 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.loadingMoreMessages = true;
     const oldestMessageId = this.messages[0]?.id; // Assuming you have an id or timestamp to identify the oldest message
 
+    const container = this.messagesContainer.nativeElement;
+
+    this.cdr.detectChanges();
+    const skeleton = this.skeletonElement.nativeElement;
+
+    const oldScrollPosition = container.scrollTop;
+    const oldScrollHeight = container.scrollHeight;
+    const skeletonHeight = skeleton.offsetHeight;
+    console.log(skeletonHeight);
 
     this.chatService.fetchMoreMessages(this.roomId, oldestMessageId).subscribe({
       next: (newMessages) => {
         setTimeout(() => {
           this.messages = [...newMessages, ...this.messages]; // Prepend new messages
+
+          this.cdr.detectChanges();
+          const scrollHeightDifference = container.scrollHeight - oldScrollHeight;
+          container.scrollTop = oldScrollPosition + scrollHeightDifference - skeletonHeight;
           this.loadingMoreMessages = false;
+
         }, 2000); // Delay for 2 second
       },
       error: (err) => {

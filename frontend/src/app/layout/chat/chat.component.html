@@ -5,7 +5,7 @@
       <span class="user-name"> </span>
     </div>
     <div class="chat-controls">
-      <button pButton [icon]="isMinimized ? 'pi pi-window-maximize' : 'pi pi-minus'"
+      <button pButton [icon]="isMinimized ? 'pi pi-chevron-up' : 'pi pi-minus'"
               class="p-button-text p-button-rounded minimize-btn"
               (click)="minimizeChat()"></button>
       <button pButton icon="pi pi-times"
@@ -15,7 +15,7 @@
   </div>
   <div class="chat-content" [class.hidden]="isMinimized">
     <div id='messagesContainer{{roomId}}' class="messages-container pb-0" (scroll)="onScroll()" #messagesContainer>
-      <div *ngIf="loadingMoreMessages" class="flex flex-column w-full">
+      <div *ngIf="loadingMoreMessages" class="flex flex-column w-full" #skeleton>
         <p-skeleton  height="2rem" styleClass="mb-2" borderRadius="16px" class="w-10rem" />
         <div class="w-full flex flex-row justify-content-end">
           <p-skeleton  height="2rem" styleClass="mb-2" borderRadius="16px" class="w-8rem" />

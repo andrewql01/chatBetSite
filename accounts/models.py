@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
@@ -38,6 +40,10 @@ class UserData(AbstractUser):
     username = models.CharField(max_length=100, unique=True)  # Use name as the login field
     email = models.EmailField(max_length=100, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
+
+    real_money_balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    bonus_money_balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -80,3 +86,22 @@ class Friendship(models.Model):
 
     class Meta:
         unique_together = ('user1', 'user2')
+
+class TransactionTypes(models.TextChoices):
+    DEPOSIT = 'deposit', 'Deposit'
+    WITHDRAWAL = 'withdrawal', 'Withdrawal'
+    BET_PLACEMENT = 'bet_placement', 'Bet Placement'
+    BET_WIN = 'bet_win', 'Bet Win'
+    BONUS_ADDED = 'bonus_added', 'Bonus Added'
+    BONUS_CONVERTED = 'bonus_converted', 'Bonus Converted'
+
+class Transaction(models.Model):
+    user = models.ForeignKey(UserData, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=20, choices=TransactionTypes.choices)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.transaction_type} - {self.amount}'
+
+

@@ -149,7 +149,7 @@ export class ChatService {
     .set('chat_uuid', roomUuid)
     .set('before_message_id', beforeMessageId);
 
-  return this.http.get<Message[]>('http://127.0.0.1:8000/api/chats/older_messages/', { params, headers })
+  return this.http.get<Message[]>('http://127.0.0.1:8000/api/chats/older-messages/', { params, headers })
     .pipe(
       map((messages: Message[]) => {
           messages = messages.reverse();

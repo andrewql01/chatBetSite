@@ -1,6 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
+class FriendRequestStatus(models.TextChoices):
+    PENDING = 'pending'
+    ACCEPTED = 'accepted'
+    REJECTED = 'rejected'
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -45,3 +50,33 @@ class UserData(AbstractUser):
 
     def __str__(self):
         return self.username  # Use name instead of username
+
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(UserData, related_name='sent_requests', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(UserData, related_name='received_requests', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.TextField(choices=FriendRequestStatus.choices, default=FriendRequestStatus.PENDING)
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+
+    def accept(self):
+        """Accept the friend request and create a friendship."""
+        self.status = FriendRequestStatus.ACCEPTED
+        self.save()
+
+        # Create a new friendship
+        Friendship.objects.create(user1=self.from_user, user2=self.to_user)
+
+    def reject(self):
+        """Reject the friend request."""
+        self.status = FriendRequestStatus.REJECTED
+        self.save()
+
+class Friendship(models.Model):
+    user1 = models.ForeignKey(UserData, related_name='friends', on_delete=models.CASCADE)
+    user2 = models.ForeignKey(UserData, related_name='friend_of', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user1', 'user2')

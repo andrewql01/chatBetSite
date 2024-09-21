@@ -67,6 +67,38 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadMoreMessages(): void {
+    this.loadingMoreMessages = true;
+    const oldestMessageId = this.messages[0]?.id; // Assuming you have an id or timestamp to identify the oldest message
+
+    const container = this.messagesContainer.nativeElement;
+
+    this.cdr.detectChanges();
+    const skeleton = this.skeletonElement.nativeElement;
+
+    const oldScrollPosition = container.scrollTop;
+    const oldScrollHeight = container.scrollHeight;
+    const skeletonHeight = skeleton.offsetHeight;
+
+    this.chatService.fetchMoreMessages(this.roomId, oldestMessageId).subscribe({
+      next: (newMessages) => {
+        setTimeout(() => {
+          this.messages = [...newMessages, ...this.messages]; // Prepend new messages
+
+          this.cdr.detectChanges();
+          const scrollHeightDifference = container.scrollHeight - oldScrollHeight;
+          container.scrollTop = oldScrollPosition + scrollHeightDifference - skeletonHeight;
+          this.loadingMoreMessages = false;
+
+        }, 2000); // Delay for 2 second
+      },
+      error: (err) => {
+        console.error('Error fetching more messages:', err);
+        this.loadingMoreMessages = false;
+      }
+    });
+}
+
   onSendMessage(messageText: string): void {
     if (messageText.trim()) {
       this.chatService.sendMessage(this.roomId, messageText);
@@ -87,6 +119,14 @@ export class ChatComponent implements OnInit, OnDestroy {
       this.isTyping = false;
       this.chatService.sendTypingStatus(this.roomId, false);
     }, 1000);
+  }
+
+  closeChat(roomId: string) {
+    this.communicationService.requestCloseChat(roomId);
+  }
+
+  minimizeChat() {
+    this.isMinimized = !this.isMinimized;
   }
 
   scrollToBottom(): void {
@@ -117,46 +157,5 @@ export class ChatComponent implements OnInit, OnDestroy {
       clearTimeout(this.typingTimeout);
     }
     this.chatService.leaveChat(this.roomId);
-  }
-
-  closeChat(roomId: string) {
-    this.communicationService.requestCloseChat(roomId);
-  }
-
-  minimizeChat() {
-    this.isMinimized = !this.isMinimized;
-  }
-
-  loadMoreMessages(): void {
-    this.loadingMoreMessages = true;
-    const oldestMessageId = this.messages[0]?.id; // Assuming you have an id or timestamp to identify the oldest message
-
-    const container = this.messagesContainer.nativeElement;
-
-    this.cdr.detectChanges();
-    const skeleton = this.skeletonElement.nativeElement;
-
-    const oldScrollPosition = container.scrollTop;
-    const oldScrollHeight = container.scrollHeight;
-    const skeletonHeight = skeleton.offsetHeight;
-    console.log(skeletonHeight);
-
-    this.chatService.fetchMoreMessages(this.roomId, oldestMessageId).subscribe({
-      next: (newMessages) => {
-        setTimeout(() => {
-          this.messages = [...newMessages, ...this.messages]; // Prepend new messages
-
-          this.cdr.detectChanges();
-          const scrollHeightDifference = container.scrollHeight - oldScrollHeight;
-          container.scrollTop = oldScrollPosition + scrollHeightDifference - skeletonHeight;
-          this.loadingMoreMessages = false;
-
-        }, 2000); // Delay for 2 second
-      },
-      error: (err) => {
-        console.error('Error fetching more messages:', err);
-        this.loadingMoreMessages = false;
-      }
-    });
-  }
+}
 }

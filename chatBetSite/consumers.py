@@ -11,7 +11,6 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.groups_joined = set()  # Initialize here
-        self.current_room = None
 
     async def connect(self):
         if not self.scope['user'].is_authenticated:
@@ -23,12 +22,9 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         # Leave the current group if the user was in one
-        if self.current_room:
-            group_name = f'chat_{self.current_room}'
-            if group_name in self.groups_joined:
-                await self.channel_layer.group_discard(group_name, self.channel_name)
-                self.groups_joined.discard(group_name)
-        self.current_room = None    # Clear the current room tracking
+        for group_name in self.groups_joined:
+            await self.channel_layer.group_discard(group_name, self.channel_name)
+            self.groups_joined.discard(group_name)
 
     async def receive(self, text_data):
 
@@ -43,16 +39,22 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
             await self.handle_chat_message(data)
         elif action == 'user_typing':
             await self.handle_user_typing(data)
+
+
         elif action == 'join_multibet':
             await self.handle_join_multibet(data)
         elif action == 'multibet_update':
             await self.handle_multibet_update(data)
-        elif action == 'bet_update':
-            await self.handle_bet_update(data)
         elif action == 'multibet_remove_bet':
             await self.handle_multibet_remove_bet(data)
         elif action == 'multibet_submit':
             await self.handle_multibet_submit(data)
+
+
+        elif action == 'bet_update':
+            await self.handle_bet_update(data)
+
+
         else:
             print(f"Unhandled action: {action}")
 
@@ -65,7 +67,6 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
             if new_group_name not in self.groups_joined:
                 await self.channel_layer.group_add(new_group_name, self.channel_name)
                 self.groups_joined.add(new_group_name)
-                self.current_room = room_uuid  # Update the current room
 
     async def handle_leave_chat(self, data):
         """Handle leaving a chat room."""
@@ -74,7 +75,6 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
             group_name = f'chat_{room_uuid}'
             await self.channel_layer.group_discard(group_name, self.channel_name)
             self.groups_joined.discard(group_name)
-        self.current_room = room_uuid
 
     async def handle_chat_message(self, data):
         """Handle sending a chat message."""

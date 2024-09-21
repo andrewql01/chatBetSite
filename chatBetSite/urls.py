@@ -1,6 +1,6 @@
 from django.urls import include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from accounts.views import RegisterView, CurrentUserView, GetUsersView
+from accounts.views import RegisterView, CurrentUserView, GetUsersView, SendFriendRequestView, AcceptFriendRequestView
 from bet.views import GetEventsView, InitializeMultiBetView
 from chat.views import UserChatsView, ChatCreateView, MessageViewSet, AddUserToChatView, OlderMessageViewSet
 
@@ -33,10 +33,14 @@ urlpatterns = [
     path('api/users/current/', CurrentUserView.as_view(), name='current_user'),
     path('api/users/chats/', UserChatsView.as_view(), name='user_chats'),
     path('api/users/create-chat/', ChatCreateView.as_view(), name='create-chat'),
-    path('api/chats/messages/', MessageViewSet.as_view(), name='get_messages'),
-    path('api/chats/older_messages/', OlderMessageViewSet.as_view(), name='get_older_messages'),
     path('api/users/get-all-users/', GetUsersView.as_view(), name='get_all_users'),
     path('api/users/add-chat-user/', AddUserToChatView.as_view(), name='add_chat_user'),
+    path('api/chats/older-messages/', OlderMessageViewSet.as_view(), name='get_older_messages'),
+    path('api/chats/messages/', MessageViewSet.as_view(), name='get_messages'),
     path('api/bets/get-events/', GetEventsView.as_view(), name='get_events'),
     path('api/bets/init-multibet/', InitializeMultiBetView.as_view(), name='initialize_multibet'),
+    path('api/users/friendships/send-request', SendFriendRequestView.as_view(), name='send_friend_request'),
+    path('api/users/friendships/accept-request', AcceptFriendRequestView.as_view(), name='accept_friend_request'),
+    path('api/users/friendships/reject-request', AcceptFriendRequestView.as_view(), name='reject_friend_request'),
+    path('api/users/friendships/get-friend-requests', )
 ]

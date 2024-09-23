@@ -34,7 +34,12 @@ export class SidebarComponent implements OnInit {
           {
             label: 'Dashboard',
             icon: 'pi pi-chart-bar',
-            command: () => this.router.navigate(['/dashboard']),
+            command: () => this.router.navigate(['main/dashboard']),
+          },
+          {
+            label: 'Friend Requests',
+            icon: 'pi pi-user-plus',
+            command: () => this.router.navigate(['main/friend-requests'])
           },
           {
             label: 'Chats',

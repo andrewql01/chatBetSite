@@ -1,0 +1,11 @@
+
+<p-panel header="Friend Requests">
+  <ng-container *ngFor="let friendRequest of friendRequests">
+    <app-friend-request (onAccept)="handleAccept(friendRequest.id)"
+                    (onReject)="handleReject(friendRequest.id)"
+                    [friendRequest]=friendRequest>
+
+    </app-friend-request>
+  </ng-container>
+
+</p-panel>

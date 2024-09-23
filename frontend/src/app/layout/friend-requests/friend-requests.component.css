@@ -1,0 +1,13 @@
+:host ::ng-deep {
+  .p-panel {
+    .p-panel-header {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 600;
+    }
+
+    .p-panel-content {
+      padding: 1rem;
+    }
+  }
+}

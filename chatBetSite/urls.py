@@ -1,6 +1,7 @@
 from django.urls import include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from accounts.views import RegisterView, CurrentUserView, GetUsersView, SendFriendRequestView, AcceptFriendRequestView
+from accounts.views import RegisterView, CurrentUserView, GetUsersView, SendFriendRequestView, AcceptFriendRequestView, \
+    GetFriendRequestsView, GetFriendsView
 from bet.views import GetEventsView, InitializeMultiBetView
 from chat.views import UserChatsView, ChatCreateView, MessageViewSet, AddUserToChatView, OlderMessageViewSet
 
@@ -42,5 +43,6 @@ urlpatterns = [
     path('api/users/friendships/send-request', SendFriendRequestView.as_view(), name='send_friend_request'),
     path('api/users/friendships/accept-request', AcceptFriendRequestView.as_view(), name='accept_friend_request'),
     path('api/users/friendships/reject-request', AcceptFriendRequestView.as_view(), name='reject_friend_request'),
-    path('api/users/friendships/get-friend-requests', )
+    path('api/users/friendships/get-friend-requests', GetFriendRequestsView.as_view(), name='get_friend_requests'),
+    path('api/users/friendships/get-friends', GetFriendsView.as_view(), name='get_friends'),
 ]

@@ -1,0 +1,18 @@
+<div class="friend-request">
+  <div class="user-info">
+    <div class="user-avatar">
+      <ng-template #defaultAvatar>
+        <div class="default-avatar"></div>
+      </ng-template>
+    </div>
+    <span class="user-name mx-2">{{ friendRequest.from_user.username }}</span>
+  </div>
+  <div class="action-buttons">
+    <button class="accept-btn" (click)="acceptRequest()">
+      <i class="pi pi-check"></i>
+    </button>
+    <button class="reject-btn" (click)="rejectRequest()">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+</div>

@@ -6,6 +6,7 @@ import {RouterOutlet} from "@angular/router";
 import {WebSocketService} from "../../web_socket_services/web-socket.service";
 import {MultibetComponent} from "../multibet/multibet.component";
 import {ChatManagerComponent} from "../chat-manager/chat-manager.component";
+import {FriendRequestsComponent} from "../friend-requests/friend-requests.component";
 
 @Component({
   selector: 'app-main',
@@ -16,7 +17,8 @@ import {ChatManagerComponent} from "../chat-manager/chat-manager.component";
     TopbarComponent,
     RouterOutlet,
     MultibetComponent,
-    ChatManagerComponent
+    ChatManagerComponent,
+    FriendRequestsComponent
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css'

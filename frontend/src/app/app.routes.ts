@@ -6,7 +6,7 @@ import { RegisterComponent } from './layout/register/register.component';
 import {MainComponent} from "./layout/main/main.component";
 import {AuthorizeGuard} from "./guards/authorize.guard";
 import {DashboardComponent} from "./layout/dashboard/dashboard.component";
-import {ChatComponent} from "./layout/chat/chat.component";
+import {FriendManagerComponent} from "./layout/friend-manager/friend-manager.component";
 
 export const routes: Routes = [
   { path: '', component: WelcomeComponent },  // Default route
@@ -15,6 +15,7 @@ export const routes: Routes = [
   { path: 'main', component: MainComponent, canActivate: [AuthorizeGuard], children: [
       { path: '', component: DashboardComponent },  // Default child route
       { path: 'dashboard', component: DashboardComponent },  // Explicit dashboard route
+      { path: 'friend-requests', component: FriendManagerComponent },  // Explicit dashboard route
     ],},
   { path: '**', redirectTo: '', pathMatch: 'full' },  // Wildcard route for a 404 page
 ];

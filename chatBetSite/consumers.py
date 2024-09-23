@@ -24,7 +24,7 @@ class UnifiedConsumer(AsyncWebsocketConsumer):
         # Leave the current group if the user was in one
         for group_name in self.groups_joined:
             await self.channel_layer.group_discard(group_name, self.channel_name)
-            self.groups_joined.discard(group_name)
+        self.groups_joined = set()
 
     async def receive(self, text_data):
 

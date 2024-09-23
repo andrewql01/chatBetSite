@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import UserData, Friendship, FriendRequest
+from accounts.models import UserData, Friendship, FriendRequest, FriendRequestStatus
 from accounts.serializers import UserSerializer, FriendRequestSerializer
 
 
@@ -66,7 +66,18 @@ class GetFriendRequestsView(ListAPIView):
     serializer_class = FriendRequestSerializer
     def get_queryset(self):
         current_user = self.request.user
-        queryset = FriendRequest.objects.all(to_user=current_user)
+        queryset = FriendRequest.objects.all(to_user=current_user, status=FriendRequestStatus.PENDING)
         return queryset
 
+class GetFriendsView(ListAPIView):
+    serializer_class = UserSerializer
+    def get_queryset(self):
+        current_user = self.request.user
+        # Get all friendships where the user is either user1 or user2
+        friendships = Friendship.objects.filter(user1=current_user).values_list('user2', flat=True)
+        friendships |= Friendship.objects.filter(user2=current_user).values_list('user1', flat=True)
+
+        # Retrieve full user details for the friends
+        friends_queryset = User.objects.filter(id__in=friendships)
+        return friends_queryset
 

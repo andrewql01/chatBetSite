@@ -1,18 +1,18 @@
 <div class="container-fluid flex flex-column h-screen">
   <!-- Topbar -->
-  <div class="topbar-container w-screen p-2 pb-1 w-full">
+  <div class="w-screen flex-grow-0 flex-shrink-1 p-2 pb-1">
     <app-topbar></app-topbar>
   </div>
 
   <!-- Main Content: Sidebar and Chat Area -->
-  <div class="flex h-full w-full">
+  <div class="flex flex-grow-1 flex-shrink-1 w-full overflow-y-scroll">
     <!-- Sidebar -->
     <div class="sidebar-container p-2 w-fit">
       <app-sidebar></app-sidebar>
     </div>
 
-    <!-- Chat Area -->
-    <div class="chat-container flex-1 p-2 h-full flex flex-column">
+    <!-- Main View Area -->
+    <div class="p-2 h-full overflow-y-scroll">
       <router-outlet></router-outlet>
       <app-multibet></app-multibet>
       <app-chat-manager></app-chat-manager>

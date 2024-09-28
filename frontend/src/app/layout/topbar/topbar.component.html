@@ -1,10 +1,8 @@
 <p-menubar>
+    <ng-template pTemplate="start">
+      <p-image class="img-responsive px-4" width="25" [src]=logoSource></p-image>
+    </ng-template>
     <ng-template pTemplate="end">
-        <div class="flex align-items-center gap-2">
-            <p-avatar
-            icon="pi pi-user"
-            styleClass="mr-2" size="normal"
-            shape="circle"/>
-        </div>
+        <app-profile-header-info></app-profile-header-info>
     </ng-template>
 </p-menubar>

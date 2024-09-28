@@ -1,1 +1,8 @@
-<p>friends works!</p>
+<div class="w-18rem">
+  <p-card header="Friends" class="p-0">
+    <ng-container *ngFor="let friend of friends">
+      <app-friend [friend]=friend
+                  (deleteFriend)=onDeleteFriend(friend.username)></app-friend>
+    </ng-container>
+  </p-card>
+</div>

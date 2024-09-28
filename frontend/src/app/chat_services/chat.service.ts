@@ -1,19 +1,22 @@
-import { BehaviorSubject, catchError, Observable, throwError } from 'rxjs';
-import { Injectable } from '@angular/core';
-import { User } from '../classes/user';
-import { Message } from '../classes/message';
-import { WebSocketService } from '../web_socket_services/web-socket.service';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { UserService } from '../user_services/user.service';
-import { map } from 'rxjs/operators';
+import {BehaviorSubject, catchError, Observable, throwError} from 'rxjs';
+import {Injectable} from '@angular/core';
+import {User} from '../classes/user';
+import {Message} from '../classes/message';
+import {WebSocketService} from '../web_socket_services/web-socket.service';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {UserService} from '../user_services/user.service';
+import {map} from 'rxjs/operators';
+import {Chat} from '../classes/chat';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
-  private activeRooms: Set<string> = new Set(); // Track all active rooms
   private typingStatusSubjects: Map<string, BehaviorSubject<{ user: User, typing: boolean }>> = new Map();
   private messagesSubjects: Map<string, BehaviorSubject<Message[]>> = new Map();
+  private activeChatsSubject = new BehaviorSubject<Map<string, Chat>>(new Map());  // Map of active chats
+
+  activeChats$ = this.activeChatsSubject.asObservable();
   currentUserId!: number;
 
   constructor(
@@ -36,9 +39,15 @@ export class ChatService {
     });
   }
 
-  // Join a chat room and initialize its message and typing observables
+  getActiveChats(): Observable<Map<string, Chat>> {
+    return this.activeChats$
+  }
+
+  /**
+   * Join a chat room by sending the roomUuid, and fetch the chat details from the backend.
+   * @param roomUuid The room UUID to join.
+   */
   joinChat(roomUuid: string): void {
-    this.activeRooms.add(roomUuid);
     this.wsService.sendMessage({ action: 'join_chat', room_uuid: roomUuid });
 
     // Initialize message tracking for the room if it doesn't exist
@@ -50,14 +59,47 @@ export class ChatService {
     if (!this.typingStatusSubjects.has(roomUuid)) {
       this.typingStatusSubjects.set(roomUuid, new BehaviorSubject<{ user: User, typing: boolean }>({ user: { id: -1, username: '' }, typing: false }));
     }
+
+    // Fetch the chat details from the backend
+    this.fetchChatDetails(roomUuid).subscribe(chatDetails => {
+      const activeChats = this.activeChatsSubject.getValue();
+      activeChats.set(roomUuid, chatDetails);  // Add the fetched chat details to active chats
+      this.activeChatsSubject.next(activeChats);  // Emit the updated list of active chats
+    });
   }
 
-  // Leave a chat room and clean up resources
+  /**
+   * Leave a chat room and remove it from the active chats list.
+   * @param roomUuid The room UUID to leave.
+   */
   leaveChat(roomUuid: string): void {
-    this.activeRooms.delete(roomUuid);
     this.wsService.sendMessage({ action: 'leave_chat', room_uuid: roomUuid });
-    this.messagesSubjects.delete(roomUuid); // Remove message history
-    this.typingStatusSubjects.delete(roomUuid); // Remove typing status
+
+    this.messagesSubjects.delete(roomUuid);  // Remove message history
+    this.typingStatusSubjects.delete(roomUuid);  // Remove typing status
+
+    const activeChats = this.activeChatsSubject.getValue();
+    activeChats.delete(roomUuid);  // Remove from active chats
+    this.activeChatsSubject.next(activeChats);  // Emit the updated list of active chats
+  }
+
+  /**
+   * Fetch the details of a chat room from the backend.
+   * @param roomUuid The room UUID to fetch details for.
+   * @returns An observable containing the Chat object.
+   */
+  private fetchChatDetails(roomUuid: string): Observable<Chat> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const params = new HttpParams().set('chat_uuid', roomUuid);
+
+    return this.http.get<Chat>('http://127.0.0.1:8000/api/chats/details/', { params, headers })
+      .pipe(
+        map((chatDetails: Chat) => chatDetails),
+        catchError(error => {
+          console.error('Error fetching chat details:', error);
+          return throwError(() => new Error('Failed to fetch chat details'));
+        })
+      );
   }
 
   // Send a chat message via WebSocket
@@ -87,9 +129,11 @@ export class ChatService {
    */
   private handleIncomingMessage(roomUuid: string, message: Message): void {
     const subject = this.messagesSubjects.get(roomUuid);
-    message.isCurrentUser = this.currentUserId === message.user.id
+    message.isCurrentUser = this.currentUserId === message.user.id;
+
     if (subject) {
-      subject.next([message]); // Emit the updated list
+      const updatedMessages = [message];  // Append new message
+      subject.next(updatedMessages);  // Emit the updated message list
     }
   }
 
@@ -108,7 +152,6 @@ export class ChatService {
 
   /**
    * Fetch the entire message history for a room and update the BehaviorSubject.
-   * This will replace the current messages with the fetched history.
    * @param roomUuid The room UUID.
    * @returns Observable of the message history.
    */
@@ -122,13 +165,9 @@ export class ChatService {
           const subject = this.messagesSubjects.get(roomUuid);
           messages = messages.reverse();
           messages = messages.map(message => ({
-          ...message,
+            ...message,
             isCurrentUser: message.user.id === this.currentUserId
           }));
-          if (subject) {
-            subject.next(messages); // Replace the current message list with the fetched history
-          }
-
           return messages;
         }),
         catchError(error => {
@@ -139,30 +178,37 @@ export class ChatService {
   }
 
   /**
-   * Fetch older messages
-   * @param roomUuid
-   * @param beforeMessageId
+   * Fetch older messages for a room.
+   * @param roomUuid The room UUID.
+   * @param beforeMessageId The ID of the message before which to fetch older messages.
    */
   fetchMoreMessages(roomUuid: string, beforeMessageId: number): Observable<Message[]> {
-  const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-  const params = new HttpParams()
-    .set('chat_uuid', roomUuid)
-    .set('before_message_id', beforeMessageId);
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const params = new HttpParams()
+      .set('chat_uuid', roomUuid)
+      .set('before_message_id', beforeMessageId);
 
-  return this.http.get<Message[]>('http://127.0.0.1:8000/api/chats/older-messages/', { params, headers })
-    .pipe(
-      map((messages: Message[]) => {
+    return this.http.get<Message[]>('http://127.0.0.1:8000/api/chats/older-messages/', { params, headers })
+      .pipe(
+        map((messages: Message[]) => {
           messages = messages.reverse();
           messages = messages.map(message => ({
-          ...message,
+            ...message,
             isCurrentUser: message.user.id === this.currentUserId
           }));
+
           return messages;
-      }),
-      catchError(error => {
-        console.error('Error fetching more messages:', error);
-        return throwError(() => new Error('Failed to fetch more messages'));
-      })
-    );
-}
+        }),
+        catchError(error => {
+          console.error('Error fetching more messages:', error);
+          return throwError(() => new Error('Failed to fetch more messages'));
+        })
+      );
+  }
+
+  getChatBetweenUsers(username: string): Observable<Chat> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const params = new HttpParams().set('other_user_username', username);
+    return this.http.get<Chat>('http://127.0.0.1:8000/api/chats/between-users/', { params, headers })
+  }
 }

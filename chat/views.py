@@ -7,9 +7,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from django.db.models import Count
 
+from accounts import models
 from chat.models import Chat, Message
-from chat.serializers import ChatSerializer, MessageSerializer
+from chat.serializers import ChatSerializer, MessageSerializer, ChatDetailsSerializer
 
 
 class UserChatsView(ListAPIView):
@@ -96,3 +98,28 @@ class AddUserToChatView(APIView):
             return Response({'message': 'User added to chat successfully.'}, status=status.HTTP_200_OK)
         else:
             return Response({'message': 'User is already in this chat.'}, status=status.HTTP_400_BAD_REQUEST)
+
+class GetChatDetailsView(APIView):
+    def get(self, request, *args, **kwargs):
+        chat_uuid = self.request.query_params.get('chat_uuid')
+
+        chat = get_object_or_404(Chat, uuid=chat_uuid)
+        serializer = ChatDetailsSerializer(chat)
+        return Response(serializer.data)
+
+class GetChatBetweenUsersView(APIView):
+    def get(self, request, *args, **kwargs):
+
+        other_user_username = request.query_params.get('other_user_username')
+
+        # Get the User objects for the specified usernames
+        user1 = get_object_or_404(User, username=self.request.user.username)
+        user2 = get_object_or_404(User, username=other_user_username)
+
+        # Query for Chat objects containing exactly user1 and user2
+        chat = Chat.objects.annotate(user_count=Count('users')).filter(
+            users__in=[user1, user2]
+        ).filter(user_count=2).distinct().first()
+
+        serializer = ChatDetailsSerializer(chat)
+        return Response(serializer.data)

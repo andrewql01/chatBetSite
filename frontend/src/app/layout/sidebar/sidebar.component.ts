@@ -18,7 +18,6 @@ import {ChatManagerComponent} from "../chat-manager/chat-manager.component";  //
 export class SidebarComponent implements OnInit {
   @ViewChild(ChatManagerComponent) chatManager!: ChatManagerComponent;
   items: MenuItem[] = [];
-  chats: Chat[] = [];
 
   constructor(
     private router: Router,
@@ -37,14 +36,13 @@ export class SidebarComponent implements OnInit {
             command: () => this.router.navigate(['main/dashboard']),
           },
           {
-            label: 'Friend Requests',
+            label: 'Manage Friends',
             icon: 'pi pi-user-plus',
-            command: () => this.router.navigate(['main/friend-requests'])
+            command: () => this.router.navigate(['main/friend-manager'])
           },
           {
             label: 'Chats',
             icon: 'pi pi-inbox',
-            items: [],
           },
           {
             label: 'Settings',
@@ -53,28 +51,5 @@ export class SidebarComponent implements OnInit {
         ]
       }
     ];
-
-    this.userService.getUserChats().subscribe({
-      next: (response) => {
-        this.chats = response;
-
-        // Find the "Chats" menu item and add the chat items under it
-        const chatsMenuItem = this.items.find(item => item.label === 'Navigate')?.items?.find(subItem => subItem.label === 'Chats');
-        if (chatsMenuItem) {
-          chatsMenuItem.items = this.chats.map(chat => ({
-            label: chat.name,
-            icon: 'pi pi-comments',
-            command: () => this.openChat(chat.uuid)
-          }));
-        }
-      },
-      error: (err) => {
-        console.error('Error fetching user chats:', err);
-      }
-    });
-  }
-
-  openChat(roomId: string): void {
-    this.chatCommunicationService.requestOpenChat(roomId);  // Notify the service
   }
 }

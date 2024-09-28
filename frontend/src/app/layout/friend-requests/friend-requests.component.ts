@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FriendRequestComponent} from "../friend-request/friend-request.component";
 import {FriendRequest} from "../../classes/friend-request";
 import {ImportsModule} from "../../imports";
+import {FriendshipService} from "../../user_services/friendship.service";
+import {MessageService} from "primeng/api";
 
 @Component({
   selector: 'app-friend-requests',
@@ -11,23 +13,44 @@ import {ImportsModule} from "../../imports";
     ImportsModule
   ],
   templateUrl: './friend-requests.component.html',
-  styleUrl: './friend-requests.component.css'
+  styleUrl: './friend-requests.component.css',
+  providers: [MessageService]
 })
-export class FriendRequestsComponent {
-  public friendRequests: FriendRequest[] = [
-  {
-    id: 1,
-    from_user: {id: 1, username: 'Andrzej',},
-    to_user: {id: 2, username: 'Admin'},
-    created_at: '10-20-2021'
-  },
-  ]
+export class FriendRequestsComponent implements OnInit {
+  public friendRequests: FriendRequest[] = [];
 
-  handleAccept(id: number) {
+  constructor(private friendshipService: FriendshipService,
+              private messageService: MessageService,) {
 
   }
 
-  handleReject(id: number) {
+  ngOnInit() {
+    this.friendshipService.getFriendRequests().subscribe({
+      next: (requests) => {
+        this.friendRequests = requests;
+      }
+    });
+  }
 
+
+  handleAccept(id: number) {
+    this.friendshipService.acceptFriendRequest(id).subscribe({
+      next: (response) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: response.message,
+        });
+        this.friendRequests = this.friendRequests.filter(request => request.id !== id);
+      }
+    })
+  }
+
+  handleReject(id: number) {
+    this.friendshipService.rejectFriendRequest(id).subscribe({
+      next: (response) => {
+        console.log(response);
+      }
+    })
   }
 }

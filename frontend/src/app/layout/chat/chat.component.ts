@@ -6,6 +6,7 @@ import { ImportsModule } from '../../imports';
 import { ButtonGroupModule } from 'primeng/buttongroup';
 import { ChatCommunicationService } from "../../chat_services/chat-communication.service";
 import { User } from "../../classes/user";
+import {Chat} from "../../classes/chat";
 
 @Component({
   selector: 'app-chat',
@@ -15,7 +16,7 @@ import { User } from "../../classes/user";
   styleUrls: ['./chat.component.css']
 })
 export class ChatComponent implements OnInit, OnDestroy {
-  @Input() roomId!: string;
+  @Input() chat!: Chat;
   messages: Message[] = [];
   isTyping: boolean = false;
   otherUserTyping: boolean = false;
@@ -35,9 +36,9 @@ export class ChatComponent implements OnInit, OnDestroy {
               private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.chatService.joinChat(this.roomId);
+    this.chatService.joinChat(this.chat.uuid);
     // Fetch initial messages
-    this.chatService.fetchInitialMessages(this.roomId).subscribe({
+    this.chatService.fetchInitialMessages(this.chat.uuid).subscribe({
       next: (messages) => {
         this.messages = messages;
         this.scrollToBottom();
@@ -47,18 +48,17 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     });
 
-
     // Subscribe to message updates
-    this.chatSub = this.chatService.getMessagesForRoom(this.roomId).subscribe({
-      next: (newMessages) => {
-        this.messages.push(...newMessages); // Append new messages
+    this.chatSub = this.chatService.getMessagesForRoom(this.chat.uuid).subscribe({
+      next: (updatedMessages) => {
+        this.messages.push(...updatedMessages);
         this.scrollToBottom();  // Scroll to the bottom when new messages arrive
       },
       error: (err) => console.error('Error receiving new messages:', err)
     });
 
     // Subscribe to typing status updates
-    this.typingStatusSub = this.chatService.getTypingStatus(this.roomId).subscribe({
+    this.typingStatusSub = this.chatService.getTypingStatus(this.chat.uuid).subscribe({
       next: status => {
         this.otherUserTyping = status.typing && status.user.id !== this.chatService.currentUserId;
         this.scrollToBottom()
@@ -80,7 +80,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     const oldScrollHeight = container.scrollHeight;
     const skeletonHeight = skeleton.offsetHeight;
 
-    this.chatService.fetchMoreMessages(this.roomId, oldestMessageId).subscribe({
+    this.chatService.fetchMoreMessages(this.chat.uuid, oldestMessageId).subscribe({
       next: (newMessages) => {
         setTimeout(() => {
           this.messages = [...newMessages, ...this.messages]; // Prepend new messages
@@ -101,9 +101,9 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   onSendMessage(messageText: string): void {
     if (messageText.trim()) {
-      this.chatService.sendMessage(this.roomId, messageText);
+      this.chatService.sendMessage(this.chat.uuid, messageText);
       this.isTyping = false;
-      this.chatService.sendTypingStatus(this.roomId, false);
+      this.chatService.sendTypingStatus(this.chat.uuid, false);
       this.newMessage = '';
     }
   }
@@ -113,11 +113,11 @@ export class ChatComponent implements OnInit, OnDestroy {
       clearTimeout(this.typingTimeout);
     }
     this.isTyping = true;
-    this.chatService.sendTypingStatus(this.roomId, true);
+    this.chatService.sendTypingStatus(this.chat.uuid, true);
 
     this.typingTimeout = setTimeout(() => {
       this.isTyping = false;
-      this.chatService.sendTypingStatus(this.roomId, false);
+      this.chatService.sendTypingStatus(this.chat.uuid, false);
     }, 1000);
   }
 
@@ -150,12 +150,20 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
+  getUsernames(): string {
+    const currentUserId = this.chatService.currentUserId;
+    return this.chat.users
+      .filter(user => user.id !== currentUserId)  // Exclude the current user
+      .map(user => user.username)  // Get usernames
+      .join(', ');  // Join with commas
+  }
+
   ngOnDestroy(): void {
     this.chatSub.unsubscribe();
     this.typingStatusSub.unsubscribe();
     if (this.typingTimeout) {
       clearTimeout(this.typingTimeout);
     }
-    this.chatService.leaveChat(this.roomId);
+    this.chatService.leaveChat(this.chat.uuid);
 }
 }

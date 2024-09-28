@@ -1,1 +1,11 @@
-<p>friend works!</p>
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>
+<div class="flex flex-row justify-content-between">
+  <div class="friend-info flex gap-2 align-items-center">
+    <p-avatar [label]="friend.username.charAt(0)" shape="circle"></p-avatar>
+    <span class="friend-username">{{ friend.username }}</span>
+  </div>
+  <div class="friend-actions">
+    <app-popup-menu [items]=items></app-popup-menu>
+  </div>
+</div>

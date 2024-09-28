@@ -1,7 +1,7 @@
-.futuristic-sexy-bet-container {
+.bet-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 10px;
   justify-content: space-between;
 }
 

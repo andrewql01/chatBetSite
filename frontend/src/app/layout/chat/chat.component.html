@@ -2,7 +2,9 @@
   <div class="chat-header">
     <div class="user-info">
       <p-avatar shape="circle"  styleClass="user-avatar"></p-avatar>
-      <span class="user-name"> </span>
+      <span class="user-name">
+        {{ chat.name ? chat.name: getUsernames() }}
+      </span>
     </div>
     <div class="chat-controls">
       <button pButton [icon]="isMinimized ? 'pi pi-chevron-up' : 'pi pi-minus'"
@@ -10,11 +12,11 @@
               (click)="minimizeChat()"></button>
       <button pButton icon="pi pi-times"
               class="p-button-text p-button-rounded close-btn"
-              (click)="closeChat(roomId)"></button>
+              (click)="closeChat(chat.uuid)"></button>
     </div>
   </div>
   <div class="chat-content" [class.hidden]="isMinimized">
-    <div id='messagesContainer{{roomId}}' class="messages-container pb-0" (scroll)="onScroll()" #messagesContainer>
+    <div id='messagesContainer{{chat.uuid}}' class="messages-container pb-0" (scroll)="onScroll()" #messagesContainer>
       <div *ngIf="loadingMoreMessages" class="flex flex-column w-full" #skeleton>
         <p-skeleton  height="2rem" styleClass="mb-2" borderRadius="16px" class="w-10rem" />
         <div class="w-full flex flex-row justify-content-end">

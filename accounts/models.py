@@ -1,7 +1,7 @@
 from decimal import Decimal
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+
 
 class FriendRequestStatus(models.TextChoices):
     PENDING = 'pending'
@@ -57,6 +57,30 @@ class UserData(AbstractUser):
     def __str__(self):
         return self.username  # Use name instead of username
 
+    def block_user(self, user_to_block):
+        """Block a user."""
+        BlockedUser.objects.get_or_create(blocker=self, blocked=user_to_block)
+
+    def unblock_user(self, user_to_unblock):
+        """Unblock a user."""
+        BlockedUser.objects.filter(blocker=self, blocked=user_to_unblock).delete()
+
+    def is_blocked(self, user):
+        """Check if a user is blocked."""
+        return BlockedUser.objects.filter(blocker=self, blocked=user).exists()
+
+class BlockedUser(models.Model):
+    blocker = models.ForeignKey(UserData, related_name='blocked_users', on_delete=models.CASCADE)
+    blocked = models.ForeignKey(UserData, related_name='blocked_by', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blocker', 'blocked')
+
+    def __str__(self):
+        return f"{self.blocker.username} blocks {self.blocked.username}"
+
+
 class FriendRequest(models.Model):
     from_user = models.ForeignKey(UserData, related_name='sent_requests', on_delete=models.CASCADE)
     to_user = models.ForeignKey(UserData, related_name='received_requests', on_delete=models.CASCADE)
@@ -74,6 +98,12 @@ class FriendRequest(models.Model):
         # Create a new friendship
         Friendship.objects.create(user1=self.from_user, user2=self.to_user)
 
+        # Create users chats
+        from chat.models import Chat
+        chat = Chat.objects.create()
+        chat.users.add(self.from_user, self.to_user)
+        chat.save()
+
     def reject(self):
         """Reject the friend request."""
         self.status = FriendRequestStatus.REJECTED
@@ -84,8 +114,19 @@ class Friendship(models.Model):
     user2 = models.ForeignKey(UserData, related_name='friend_of', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def remove_friendship(self):
+        """Remove the friendship between two users and delete associated friend requests."""
+        # Delete any friend requests associated with this friendship
+        FriendRequest.objects.filter(
+            (models.Q(from_user=self.user1) & models.Q(to_user=self.user2)) |
+            (models.Q(from_user=self.user2) & models.Q(to_user=self.user1))
+        ).delete()
+
+        # Now delete the friendship record
+        self.delete()
+
     class Meta:
-        unique_together = ('user1', 'user2')
+        unique_together = (('user1', 'user2'), ('user2', 'user1'))
 
 class TransactionTypes(models.TextChoices):
     DEPOSIT = 'deposit', 'Deposit'

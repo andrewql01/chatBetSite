@@ -1,9 +1,10 @@
 from django.urls import include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from accounts.views import RegisterView, CurrentUserView, GetUsersView, SendFriendRequestView, AcceptFriendRequestView, \
-    GetFriendRequestsView, GetFriendsView
+    GetFriendRequestsView, GetFriendsView, DeleteFriendView
 from bet.views import GetEventsView, InitializeMultiBetView
-from chat.views import UserChatsView, ChatCreateView, MessageViewSet, AddUserToChatView, OlderMessageViewSet
+from chat.views import UserChatsView, ChatCreateView, MessageViewSet, AddUserToChatView, OlderMessageViewSet, \
+    GetChatDetailsView, GetChatBetweenUsersView
 
 """
 URL configuration for chatBetSite project.
@@ -38,11 +39,14 @@ urlpatterns = [
     path('api/users/add-chat-user/', AddUserToChatView.as_view(), name='add_chat_user'),
     path('api/chats/older-messages/', OlderMessageViewSet.as_view(), name='get_older_messages'),
     path('api/chats/messages/', MessageViewSet.as_view(), name='get_messages'),
+    path('api/chats/details/', GetChatDetailsView.as_view(), name='get_chat_details'),
+    path('api/chats/between-users/', GetChatBetweenUsersView.as_view(), name='get_chat_between_users'),
     path('api/bets/get-events/', GetEventsView.as_view(), name='get_events'),
     path('api/bets/init-multibet/', InitializeMultiBetView.as_view(), name='initialize_multibet'),
-    path('api/users/friendships/send-request', SendFriendRequestView.as_view(), name='send_friend_request'),
-    path('api/users/friendships/accept-request', AcceptFriendRequestView.as_view(), name='accept_friend_request'),
-    path('api/users/friendships/reject-request', AcceptFriendRequestView.as_view(), name='reject_friend_request'),
-    path('api/users/friendships/get-friend-requests', GetFriendRequestsView.as_view(), name='get_friend_requests'),
-    path('api/users/friendships/get-friends', GetFriendsView.as_view(), name='get_friends'),
+    path('api/users/friendships/send-request/', SendFriendRequestView.as_view(), name='send_friend_request'),
+    path('api/users/friendships/accept-request/', AcceptFriendRequestView.as_view(), name='accept_friend_request'),
+    path('api/users/friendships/reject-request/', AcceptFriendRequestView.as_view(), name='reject_friend_request'),
+    path('api/users/friendships/get-friend-requests/', GetFriendRequestsView.as_view(), name='get_friend_requests'),
+    path('api/users/friendships/get-friends/', GetFriendsView.as_view(), name='get_friends'),
+    path('api/users/friendships/delete-friend/', DeleteFriendView.as_view(), name='delete_friend'),
 ]

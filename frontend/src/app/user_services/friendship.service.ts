@@ -20,32 +20,38 @@ export class FriendshipService {
   sendFriendRequest(username: string): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = { to_user_username: username };
-    return this.http.post(`${this.apiUrl}/send-request`, body, { headers });
+    return this.http.post(`${this.apiUrl}/send-request/`, body, { headers });
   }
 
   // Accept friend request
   acceptFriendRequest(friendRequestId: number): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = { friend_request_id: friendRequestId };
-    return this.http.post(`${this.apiUrl}/accept-request`, body, { headers });
+    return this.http.post(`${this.apiUrl}/accept-request/`, body, { headers });
   }
 
   // Reject friend request
   rejectFriendRequest(friendRequestId: number): Observable<any> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const body = { friend_request_id: friendRequestId };
-    return this.http.post(`${this.apiUrl}/reject-request`, body, { headers });
+    return this.http.post(`${this.apiUrl}/reject-request/`, body, { headers });
   }
 
   // Get list of friends
   getFriends(): Observable<User[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.get<User[]>(`${this.apiUrl}/get-friends`, { headers });
+    return this.http.get<User[]>(`${this.apiUrl}/get-friends/`, { headers });
   }
 
   // Get list of unaccepted friend requests
   getFriendRequests(): Observable<FriendRequest[]> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.get<FriendRequest[]>(`${this.apiUrl}/get-friend-requests`, { headers });
+    return this.http.get<FriendRequest[]>(`${this.apiUrl}/get-friend-requests/`, { headers });
+  }
+
+  deleteFriend(username: string): Observable<any> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const body = { friend_username: username };
+    return this.http.post(`${this.apiUrl}/delete-friend/`, body, { headers });
   }
 }

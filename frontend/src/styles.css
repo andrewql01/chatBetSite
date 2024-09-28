@@ -55,11 +55,9 @@ body{
   -moz-box-shadow:none;
 }
 
-/* ... (previous styles remain unchanged) ... */
-
 /* Sidebar Styles */
 .p-menu {
-  background-color: var(--panel-background);
+  background-color: var(--secondary-color);
   border: none;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
   height: 100%;
@@ -112,7 +110,7 @@ body{
 
 /* Topbar Styles */
 .p-menubar {
-  background-color: var(--panel-background);
+  background-color: var(--secondary-color);
   border: none;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
@@ -151,8 +149,9 @@ body{
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
+  background: linear-gradient(45deg, rgba(52, 152, 219, 0.02), rgba(46, 204, 113, 0.05));
   pointer-events: none;
+  border-radius: inherit;
 }
 
 

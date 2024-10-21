@@ -17,16 +17,21 @@ export class ChatService {
   private activeChatsSubject = new BehaviorSubject<Map<string, Chat>>(new Map());  // Map of active chats
 
   activeChats$ = this.activeChatsSubject.asObservable();
-  currentUserId!: number;
+  currentUser: User | null = null;
 
   constructor(
     private wsService: WebSocketService,
     private http: HttpClient,
     private userService: UserService
   ) {
-    this.userService.getUser().subscribe(value => {
-      this.currentUserId = value.id;
+    this.userService.user$.subscribe(user => {
+      this.currentUser = user;
     });
+
+    // If user is not loaded yet, fetch it
+    if (!this.currentUser) {
+      this.userService.fetchCurrentUser().subscribe();
+    }
 
     // WebSocket handler for incoming messages and typing status
     this.wsService.getMessages().subscribe(data => {
@@ -129,7 +134,7 @@ export class ChatService {
    */
   private handleIncomingMessage(roomUuid: string, message: Message): void {
     const subject = this.messagesSubjects.get(roomUuid);
-    message.isCurrentUser = this.currentUserId === message.user.id;
+    message.isCurrentUser = this.currentUser!.id === message.user.id;
 
     if (subject) {
       const updatedMessages = [message];  // Append new message
@@ -166,7 +171,7 @@ export class ChatService {
           messages = messages.reverse();
           messages = messages.map(message => ({
             ...message,
-            isCurrentUser: message.user.id === this.currentUserId
+            isCurrentUser: message.user.id === this.currentUser!.id
           }));
           return messages;
         }),
@@ -194,7 +199,7 @@ export class ChatService {
           messages = messages.reverse();
           messages = messages.map(message => ({
             ...message,
-            isCurrentUser: message.user.id === this.currentUserId
+            isCurrentUser: message.user.id === this.currentUser!.id
           }));
 
           return messages;

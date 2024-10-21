@@ -5,6 +5,7 @@ from accounts.views import RegisterView, CurrentUserView, GetUsersView, SendFrie
 from bet.views import GetEventsView, InitializeMultiBetView
 from chat.views import UserChatsView, ChatCreateView, MessageViewSet, AddUserToChatView, OlderMessageViewSet, \
     GetChatDetailsView, GetChatBetweenUsersView
+from scraper.views import ScrapeView
 
 """
 URL configuration for chatBetSite project.
@@ -49,4 +50,5 @@ urlpatterns = [
     path('api/users/friendships/get-friend-requests/', GetFriendRequestsView.as_view(), name='get_friend_requests'),
     path('api/users/friendships/get-friends/', GetFriendsView.as_view(), name='get_friends'),
     path('api/users/friendships/delete-friend/', DeleteFriendView.as_view(), name='delete_friend'),
+    path('api/scraper/scrape', ScrapeView.as_view(), name='scrape'),
 ]

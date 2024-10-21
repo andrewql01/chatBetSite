@@ -5,7 +5,7 @@ from .models import UserData, FriendRequest
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserData
-        fields = ('id', 'email', 'username', 'password')
+        fields = ('id', 'email', 'username', 'password', 'real_money_balance', 'bonus_money_balance')
         extra_kwargs = {
             'password': {'write_only': True}
         }

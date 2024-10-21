@@ -1,0 +1,41 @@
+<div class="w-18rem">
+  <p-card header="Add Friend" class="p-0">
+    <form [formGroup]="addFriendForm" (ngSubmit)="onSubmit()" class="w-full">
+      <div class="w-full">
+        <span class="p-input-icon-left p-input-icon-right">
+          <p-inputGroup>
+            <p-floatLabel>
+              <input
+                type="text"
+                id="username"
+                pInputText
+                formControlName="username"
+                class="border-noround-right"
+              >
+              <label for="username">Friend's Username</label>
+            </p-floatLabel>
+              <button
+                pButton
+                type="submit"
+                icon="pi pi-plus"
+                [disabled]="addFriendForm.invalid || isSubmitting"
+                [loading]="isSubmitting"
+                class="p-button-text p-button-outlined"
+              ></button>
+          </p-inputGroup>
+
+        </span>
+        <span class="w-full">
+          <small
+            class="p-error flex-1"
+            *ngIf="addFriendForm.get('username')?.invalid && addFriendForm.get('username')?.touched"
+          >
+            Username is required and must be at least 3 characters long.
+          </small>
+        </span>
+      </div>
+    </form>
+  </p-card>
+</div>
+
+<p-toast></p-toast>

@@ -60,7 +60,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     // Subscribe to typing status updates
     this.typingStatusSub = this.chatService.getTypingStatus(this.chat.uuid).subscribe({
       next: status => {
-        this.otherUserTyping = status.typing && status.user.id !== this.chatService.currentUserId;
+        this.otherUserTyping = status.typing && status.user.id !== this.chatService.currentUser!.id;
         this.scrollToBottom()
       },
       error: (err) => console.error('Error receiving typing status:', err)
@@ -151,7 +151,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   getUsernames(): string {
-    const currentUserId = this.chatService.currentUserId;
+    const currentUserId = this.chatService.currentUser!.id;
     return this.chat.users
       .filter(user => user.id !== currentUserId)  // Exclude the current user
       .map(user => user.username)  // Get usernames

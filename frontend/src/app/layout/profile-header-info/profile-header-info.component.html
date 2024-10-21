@@ -1,0 +1,14 @@
+<div class="profile-header-info flex align-items-center">
+  <div class="flex flex-column ml-2"  *ngIf="user$ | async as user; else loading">
+    <div class="flex align-items-center">
+      <i class="pi pi-dollar text-sm mr-1"></i>
+      <span class="text-sm font-medium">{{ user.real_money_balance | currency:'USD':'symbol':'1.2-2' }}</span>
+      <i class="pi pi-gift text-sm ml-2 mr-1"></i>
+      <span class="text-sm font-medium freebet-balance">{{ user.bonus_money_balance | currency:'USD':'symbol':'1.2-2' }}</span>
+    </div>
+  </div>
+  <ng-template #loading>
+    <p-skeleton width="8rem" height="2rem" />
+  </ng-template>
+  <app-popup-menu [items]="items"></app-popup-menu>
+</div>

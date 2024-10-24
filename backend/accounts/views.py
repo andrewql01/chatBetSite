@@ -9,7 +9,6 @@ from rest_framework.views import APIView
 from accounts.models import UserData, Friendship, FriendRequest, FriendRequestStatus
 from accounts.serializers import UserSerializer, FriendRequestSerializer
 
-
 class RegisterView(APIView):
 
     permission_classes = (AllowAny,)

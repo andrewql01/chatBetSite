@@ -9,7 +9,7 @@ import {tap} from "rxjs/operators";
 })
 export class RegisterService {
 
-  private apiUrl = 'http://127.0.0.1:8000/api/register/'; // Your API endpoint
+  private apiUrl = 'http://127.0.0.1:8000/api/users/register/'; // Your API endpoint
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
